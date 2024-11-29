@@ -166,6 +166,8 @@ class Team(models.Model):
         (NOVICE, "Novice")
     )
 
+    room_tags = models.ManyToManyField("RoomTag", blank=True)
+
     break_preference = models.IntegerField(default=0,
                                            choices=BREAK_PREFERENCE_CHOICES)
     tiebreaker = models.IntegerField(unique=True, null=True, blank=True)
@@ -296,6 +298,7 @@ class BreakingTeam(models.Model):
 class Judge(models.Model):
     name = models.CharField(max_length=30, unique=True)
     rank = models.DecimalField(max_digits=4, decimal_places=2)
+    room_tags = models.ManyToManyField("RoomTag", blank=True)
     schools = models.ManyToManyField(School)
     ballot_code = models.CharField(max_length=255,
                                    blank=True,
@@ -367,6 +370,7 @@ class Scratch(models.Model):
 class Room(models.Model):
     name = models.CharField(max_length=30, unique=True)
     rank = models.DecimalField(max_digits=4, decimal_places=2)
+    tags = models.ManyToManyField("RoomTag", blank=True)
 
     def __str__(self):
         return self.name
@@ -382,6 +386,8 @@ class Room(models.Model):
     def is_checked_in_for_round(self, round_number):
         return RoomCheckIn.objects.filter(room=self,
                                           round_number=round_number).exists()
+    def is_tagged_with(self, tag_id):
+        return self.tags.filter(pk=tag_id).exists()
 
     class Meta:
         ordering = ["name"]
@@ -497,8 +503,22 @@ class Round(models.Model):
         (ALL_DROP, "ALL DROP"),
         (ALL_WIN, "ALL WIN"),
     )
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, blank=True, null=True)
     victor = models.IntegerField(choices=VICTOR_CHOICES, default=0)
+    
+    room_tags = models.ManyToManyField("RoomTag", blank=True)
+    room_tag_priority = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    room_warning = models.TextField(blank=True, null=True)
+
+    def populate_room_tags(self):
+        for tag in self.gov_team.room_tags.all():
+            self.room_tags.add(tag)
+        for tag in self.opp_team.room_tags.all():
+            self.room_tags.add(tag)
+        for judge in self.judges.all():
+            for tag in judge.room_tags.all():
+                self.room_tags.add(tag)
+        self.room_tag_priority = sum(tag.priority for tag in self.room_tags.all())
 
     def clean(self):
         if self.pk and self.chair not in self.judges.all():
@@ -584,3 +604,19 @@ class RoomCheckIn(models.Model):
     def __str__(self):
         return "Room %s is checked in for round %s" % (self.room,
                                                        self.round_number)
+
+class RoomTag(models.Model):
+    tag = models.CharField(max_length=255)
+    priority = models.DecimalField(max_digits=4, decimal_places=2)
+    color = models.CharField(max_length=7, default="#000000")
+    tagged_judges = models.ManyToManyField(Judge, through='RoomTagAssociation', related_name='tagged_room_tags', on_delete=models.CASCADE)
+    tagged_teams = models.ManyToManyField(Team, through='RoomTagAssociation', related_name='tagged_room_tags', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.tag
+    
+class RoomTagAssociation(models.Model):
+    room_tag = models.ForeignKey(RoomTag, on_delete=models.CASCADE)
+    judge = models.ForeignKey(Judge, on_delete=models.CASCADE, null=True, blank=True)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+    extra_field = models.CharField(max_length=100, null=True, blank=True)

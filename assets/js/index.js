@@ -11,6 +11,7 @@ import bsCustomFileInput from "bs-custom-file-input";
 import ballotsInit from "./ballots";
 import checkinInit from "./batchCheckin";
 import roomCheckinInit from "./roomBatchCheckin";
+import roomBatchTagInit from "./roomBatchTag";
 import filtersInit from "./filters";
 import quickSearchInit from "./quickSearch";
 import multiselectInit from "./multiselect";
@@ -46,6 +47,7 @@ $(document).ready(() => {
   ballotsInit();
   checkinInit();
   roomCheckinInit();
+  roomBatchTagInit();
   filtersInit();
   quickSearchInit();
   multiselectInit();

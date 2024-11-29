@@ -77,6 +77,30 @@ class RoomForm(forms.ModelForm):
         fields = "__all__"
 
 
+class RoomTagForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        entry = "first_entry" in kwargs
+        if entry:
+            kwargs.pop("first_entry")
+        super(RoomTagForm, self).__init__(*args, **kwargs)
+        if not entry:
+            num_rounds = TabSettings.objects.get(key="tot_rounds").value
+            try:
+                room_tag = kwargs["instance"]
+            except Exception:
+                pass
+
+    def save(self, commit=True):
+        room_tag = super(RoomTagForm, self).save(commit)
+        return room_tag
+
+    class Meta:
+        model = RoomTag
+        fields = "__all__"
+        widgets = {
+            'color': forms.TextInput(attrs={'type': 'color'}),  # Render as color input
+        }
+
 class JudgeForm(forms.ModelForm):
     schools = forms.ModelMultipleChoiceField(queryset=School.objects.all(),
                                              required=False)

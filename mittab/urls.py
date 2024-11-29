@@ -60,6 +60,12 @@ urlpatterns = [
         views.room_check_in,
         name="room_check_in"),
     url(r"^batch_room_checkin/$", views.batch_checkin, name="batch_room_checkin"),
+    url(r"^room/(\d+)/tags/(\w+)/$",
+        views.room_tag,
+        name="room_tag"),
+    url(r"^batch_room_tag/$", views.batch_room_tag, name="batch_room_tag"),
+    url(r"^add_room_tag/$", views.add_room_tag, name="add_room_tag"),
+    url(r"^tag/(\d+)/$", views.view_tag, name="view_tag"),
 
 
     # Scratch related
@@ -91,6 +97,7 @@ urlpatterns = [
     url(r"^team/ranking/$", team_views.rank_teams_ajax,
         name="rank_teams_ajax"),
     url(r"^team/rank/$", team_views.rank_teams, name="rank_teams"),
+
 
     # Debater related
     url(r"^debater/(\d+)/$", debater_views.view_debater, name="view_debater"),
@@ -135,9 +142,12 @@ urlpatterns = [
         pairing_views.assign_judge,
         name="swap_judge"),
     url(r"^pairing/pair_round/$", pairing_views.pair_round, name="pair_round"),
-    url(r"^pairing/assign_judges/$",
+    url(r"^pairing/assign_judges_to_pairing/$",
         pairing_views.assign_judges_to_pairing,
-        name="assign_judges"),
+        name="assign_judges_to_pairing"),
+    url(r"^pairing/assign_rooms_to_pairing/$",
+        pairing_views.assign_rooms_to_pairing,
+        name="assign_rooms_to_pairing"),
     url(r"^pairing/confirm_start_tourny/$",
         pairing_views.confirm_start_new_tourny,
         name="confirm_start_tourny"),
