@@ -226,7 +226,8 @@ def view_tag(request, tag_id):
         if form.is_valid():
             try:
                 form.save()
-            except ValueError:
+            except ValueError as e:
+                print(e)
                 return redirect_and_flash_error(
                     request,
                     "Tag name cannot be validated, most likely a non-existent tag"
@@ -248,8 +249,12 @@ def delete_room_tag(request, tag_id):
     if request.method == "POST":
         tag_id = request.POST.get("tag_id")
         try:
+            rounds = list(Round.objects.filter(room_tags__id=tag_id))
             tag = RoomTag.objects.get(pk=tag_id)
             tag.delete()
+            for roundobj in rounds:
+                print(roundobj.judges.all())
+                roundobj.save()
             return redirect_and_flash_success(request, "Tag deleted successfully", path=reverse("batch_room_tag"))
         except RoomTag.DoesNotExist:
             return redirect_and_flash_error(request, "Tag not found")

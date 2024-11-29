@@ -2,7 +2,7 @@ import random
 import time
 import datetime
 
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import permission_required
@@ -288,6 +288,46 @@ def alternative_judges(request, round_id, judge_id=None):
 
     return render(request, "pairing/judge_dropdown.html", locals())
 
+def alternative_rooms(request, round_id, room_id):
+    round_obj = Round.objects.get(id=int(round_id))
+    round_number = round_obj.round_number
+
+    try:
+        current_room_id = int(room_id)
+        current_room_obj = Room.objects.get(id=current_room_id)
+    except (ValueError, Room.DoesNotExist):
+        ccurrent_room_obj = None
+
+    # Fetch all rooms checked in for the given round
+    checked_in_rooms = sorted(
+        [r.room for r in RoomCheckIn.objects.filter(round_number=round_number).select_related("room")],
+        key=lambda r: r.rank,
+        reverse=True
+    )
+
+    # Rooms meeting tag requirements
+    tags_met = [room for room in checked_in_rooms if set(round_obj.room_tags.all()).issubset(set(room.tags.all()))]
+
+    # Viable rooms not paired in
+    viable_rooms = [
+        room for room in tags_met
+        if not Round.objects.filter(round_number=round_number, room=room).exists()
+    ]
+
+    # Viable rooms already paired in
+    viable_paired_rooms = [room for room in tags_met if room not in viable_rooms]
+
+    # Other rooms not meeting tag requirements
+    other_rooms = [room for room in checked_in_rooms if room not in tags_met]
+    return render(request, "pairing/room_dropdown.html", {
+        "current_room": current_room_obj,
+        "round_obj": round_obj,
+        "viable_rooms": viable_rooms,
+        "viable_paired_rooms": viable_paired_rooms,
+        "other_rooms": other_rooms,
+    })
+
+
 
 def alternative_teams(request, round_id, current_team_id, position):
     round_obj = Round.objects.get(pk=round_id)
@@ -358,6 +398,10 @@ def assign_team(request, round_id, position, team_id):
     return JsonResponse(data)
 
 
+def room_warning(request, round_id):
+    pairing = get_object_or_404(Round, id=round_id)
+    return JsonResponse({'room_warning': pairing.room_warning})
+
 @permission_required("tab.tab_settings.can_change", login_url="/403/")
 def assign_judge(request, round_id, judge_id, remove_id=None):
     try:
@@ -387,6 +431,27 @@ def assign_judge(request, round_id, judge_id, remove_id=None):
         emit_current_exception()
         data = {"success": False}
     return JsonResponse(data)
+
+@permission_required("tab.tab_settings.can_change", login_url="/403/")
+def assign_room(request, round_id, room_id, remove_id=None):
+    try:
+        round_obj = Round.objects.get(id=int(round_id))
+        if remove_id is not None and round_obj.room.id != remove_id:
+                round_obj.room = None
+        room_obj = Room.objects.get(id=int(room_id))
+        round_obj.room = room_obj
+        round_obj.save()
+        data = {
+            "success": True,
+            "room_id": room_obj.id,
+            "round_id": round_obj.id,
+            "room_name": room_obj.name,
+        }
+    except Exception:
+        emit_current_exception()
+        data = {"success": False}
+    return JsonResponse(data)
+
 
 
 def toggle_pairing_released(request):

@@ -46,6 +46,7 @@ function assignTeam(e) {
         $container.find(".tabcard").attr("team-id", result.team.id);
 
         populateTabCards();
+        refreshRoomWarning(roundId);
       } else {
         window.alert(alertMsg);
       }
@@ -105,7 +106,9 @@ function assignJudge(e) {
       $(`.judges span[round-id=${roundId}] .judge-toggle`).removeClass("chair");
       $(`.judges span[round-id=${roundId}][judge-id=${result.chair_id}]
         .judge-toggle`).addClass("chair");
+      refreshRoomWarning(roundId);
     }
+
   });
 }
 
@@ -123,6 +126,54 @@ function populateAlternativeJudges() {
         .find(".dropdown-menu")
         .find(".judge-assign")
         .click(assignJudge);
+      quickSearchInit($parent.find("#quick-search"));
+      $parent.find("#quick-search").focus();
+    }
+  });
+}
+
+function assignRoom(e) {
+  e.preventDefault();
+  const roundId = $(e.target).attr("round-id");
+  const roomId = $(e.target).attr("room-id");
+  const curRoomId = $(e.target).attr("current-room-id");
+  const url = `/round/${roundId}/assign_room/${roomId}/${curRoomId || ""}`;
+
+  let $buttonWrapper;
+  if (curRoomId) {
+    $buttonWrapper = $(`span[round-id=${roundId}][room-id=${curRoomId}]`);
+  }
+  const $button = $buttonWrapper.find(".btn-sm");
+  $button.addClass("disabled");
+
+  $.ajax({
+    url,
+    success(result) {
+      $button.removeClass("disabled");
+      $buttonWrapper.removeClass("unassigned");
+      $buttonWrapper.attr("room-id", result.room_id);
+
+      $button.html(`${result.room_name}`);
+      $(`.room span[round-id=${roundId}] .room-toggle`);
+      refreshRoomWarning(roundId);
+    }
+  });
+}
+
+function populateAlternativeRooms() {
+  const $parent = $(this).parent();
+  const roomId = $parent.attr("room-id");
+  const roundId = $parent.attr("round-id");
+  const url = `/round/${roundId}/alternative_rooms/${roomId || ""}`;
+
+  $.ajax({
+    url,
+    success(result) {
+      $parent.find(".dropdown-menu").html(result);
+      $parent
+        .find(".dropdown-menu")
+        .find(".room-assign")
+        .click(assignRoom);
       quickSearchInit($parent.find("#quick-search"));
       $parent.find("#quick-search").focus();
     }
@@ -165,6 +216,33 @@ function togglePairingRelease(event) {
   });
 }
 
+function refreshRoomWarning(roundId) {
+  $.ajax({
+    url: `/pairings/room_warning/${roundId}`,
+    success(result) {
+      const warningElement = $(`.row[round-id=${roundId}] .alert-danger`);
+      if (result.room_warning) {
+        if (warningElement.length) {
+          warningElement.text(result.room_warning);
+        } else {
+          const warningHTML = `
+            <div class="alert alert-danger text-center" role="alert" style="font-size: 1.5em;">
+              ${result.room_warning}
+            </div>
+          `;
+          $(`.row[round-id=${roundId}]`).prepend(warningHTML);
+        }
+      } else {
+        warningElement.remove();
+      }
+    },
+    failure() {
+      console.error("Failed to refresh room warning");
+    }
+  });
+}
+
+
 $(document).ready(() => {
   populateTabCards();
   $("#team_ranking").each((_, element) => {
@@ -176,6 +254,7 @@ $(document).ready(() => {
 
   $(".judge-toggle").click(populateAlternativeJudges);
   $(".team-toggle").click(populateAlternativeTeams);
+  $(".room-toggle").click(populateAlternativeRooms);
   $(".alert-link").click(alertLink);
   $(".btn.release").click(togglePairingRelease);
 });

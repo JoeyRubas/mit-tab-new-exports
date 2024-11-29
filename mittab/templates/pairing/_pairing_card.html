@@ -115,12 +115,29 @@
         {% if pairing.judges.all|length > 1 %}
         <a class="btn-sm btn-block btn-warning" href="/round/{{pairing.id}}/result/{{pairing.judges.all|length}}/">Enter Panel</a>
         {% endif %}
-        <a class="btn-sm btn-block btn-light" href="/room/{{pairing.room.id}}" style="background-color: {{pairing.room.get_color}}">
-          <i class="far fa-building" ></i> {{pairing.room.name}}
-        </a>
+
+        <div class="dropdown room" >
+          <span room-id="{{pairing.room.id}}" 
+            round-id="{{pairing.id}}">
+          <a 
+            class="btn-sm btn-block btn-light room-toggle dropdown-toggle text-wrap" 
+            href="#" 
+            role="button" 
+            id="roomDropdown" 
+            data-toggle="dropdown" 
+            aria-haspopup="true" 
+            aria-expanded="false" 
+            style="background-color: {{pairing.room.get_color}}; white-space: normal;"
+            >
+            <i class="far fa-building"></i> {{pairing.room.name}}
+          </a>
+          <div class="dropdown-menu" aria-labelledby="roomDropdown"></div>
+          </span>
+        </div>
         <a class="btn-sm btn-block btn-light" href="/admin/tab/round/{{pairing.id}}/change/">
           <i class="fas fa-unlock-alt"></i> Edit in Admin
         </a>
+        
       </div>
     </div>
   </div>

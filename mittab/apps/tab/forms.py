@@ -114,6 +114,15 @@ class RoomTagForm(forms.ModelForm):
             room_tag.team_set.set(self.cleaned_data['teams'])
             room_tag.judge_set.set(self.cleaned_data['judges'])
 
+            # Call populate_room_tags for any round associated with a team or judge with this tag
+            for team in self.cleaned_data['teams']:
+                for roundobj in Round.objects.filter(gov_team=team).all() | Round.objects.filter(opp_team=team).all():
+                    roundobj.save()
+
+            for judge in self.cleaned_data['judges']:
+                for roundobj in Round.objects.filter(judges=judge).all():
+                    roundobj.save()
+                    
         return room_tag
 
     class Meta:
@@ -167,7 +176,8 @@ class JudgeForm(forms.ModelForm):
                     checked_in.save()
                 elif checked_in and not should_be_checked_in:
                     checked_in.delete()
-
+        for roundobj in Round.objects.filter(judges=judge).all():
+            roundobj.save()
         return judge
 
     class Meta:
@@ -200,6 +210,12 @@ class TeamForm(forms.ModelForm):
                      or removing them from it before creating this one."""
                 )
         return data
+
+    def save(self, commit=True):
+        team = super(TeamForm, self).save(commit=commit)
+        for roundobj in Round.objects.filter(gov_team=team).all() | Round.objects.filter(opp_team=team).all():
+            roundobj.save()
+        return team
 
     class Meta:
         model = Team

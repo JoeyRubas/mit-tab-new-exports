@@ -70,7 +70,8 @@ def view_team(request, team_id):
         if form.is_valid():
             try:
                 form.save()
-            except ValueError:
+            except ValueError as e:
+                print("Error saving team: %s" % e)
                 return redirect_and_flash_error(
                     request,
                     "An error occured, most likely a non-existent team")

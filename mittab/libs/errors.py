@@ -47,6 +47,17 @@ class JudgeAssignmentError(Exception):
     def __str__(self):
         return repr(self.msg)
 
+class RoomAssignmentError(Exception):
+    def __init__(self, reason=None):
+        super(JudgeAssignmentError, self).__init__()
+        if reason is not None:
+            self.msg = reason
+        else:
+            self.msg = "Could not assign judges"
+
+    def __str__(self):
+        return repr(self.msg)
+
 
 class PrevRoundNotEnteredError(Exception):
     def __init__(self):

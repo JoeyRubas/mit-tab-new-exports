@@ -517,6 +517,7 @@ class Round(models.Model):
     room_warning = models.TextField(blank=True, null=True)
 
     def populate_room_tags(self):
+        self.room_tags.clear()
         for tag in self.gov_team.room_tags.all():
             self.room_tags.add(tag)
         for tag in self.opp_team.room_tags.all():
@@ -525,6 +526,11 @@ class Round(models.Model):
             for tag in judge.room_tags.all():
                 self.room_tags.add(tag)
         self.room_tag_priority = sum(tag.priority for tag in self.room_tags.all())
+        missing_tags = set(self.room_tags.all()).difference(set(self.room.tags.all()))
+        if missing_tags:
+            self.room_warning = "Warning: Unmet room tags: " + ", ".join([tag.tag for tag in missing_tags])
+        else:
+            self.room_warning = None
 
     def clean(self):
         if self.pk and self.chair not in self.judges.all():
@@ -546,9 +552,10 @@ class Round(models.Model):
 
         if no_shows:
             no_shows.delete()
-
+        self.populate_room_tags()
         super(Round, self).save(force_insert, force_update, using,
                                 update_fields)
+        
 
     def delete(self, using=None, keep_parents=False):
         rounds = RoundStats.objects.filter(round=self)
