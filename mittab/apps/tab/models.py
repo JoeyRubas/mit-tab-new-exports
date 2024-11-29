@@ -615,14 +615,28 @@ class RoomTag(models.Model):
     tag = models.CharField(max_length=255)
     priority = models.DecimalField(max_digits=4, decimal_places=2)
     color = models.CharField(max_length=7, default="#000000")
-    tagged_judges = models.ManyToManyField(Judge, through='RoomTagAssociation', related_name='tagged_room_tags')
-    tagged_teams = models.ManyToManyField(Team, through='RoomTagAssociation', related_name='tagged_room_tags')
+
+    DEFAULT_COLORS = [
+        "#f8d7da",  # Bootstrap danger (red background)
+        "#cce5ff",  # Bootstrap primary (blue background)
+        "#d6d8db",  # Bootstrap secondary (gray background)
+        "#d4edda",  # Bootstrap success (green background)
+        "#ffeeba",  # Bootstrap warning (orange-yellow background)
+    ]
+
+
+    def save(self, *args, **kwargs):
+        # Assign default color if not explicitly set
+        if not self.color or self.color == "#000000":
+            used_colors = set(RoomTag.objects.values_list('color', flat=True))
+            available_colors = [color for color in self.DEFAULT_COLORS if color not in used_colors]
+            
+            if available_colors:
+                self.color = available_colors[0]  # Assign the first unused color
+            else:
+                self.color = "#000000"  # Fallback if all default colors are used
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.tag
-    
-class RoomTagAssociation(models.Model):
-    room_tag = models.ForeignKey(RoomTag, on_delete=models.CASCADE)
-    judge = models.ForeignKey(Judge, on_delete=models.CASCADE, null=True, blank=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
-    extra_field = models.CharField(max_length=100, null=True, blank=True)

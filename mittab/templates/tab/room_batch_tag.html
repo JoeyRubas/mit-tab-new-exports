@@ -27,7 +27,7 @@
     <table class="table table-striped table-bordered table-sm">
     <thead>
     <th>Room</th>
-      {% for tag in tags %}<th><a href="/tag/{{ tag.pk }}">{{ tag.tag }}</a></th>{% endfor %}
+      {% for tag in tags %}<th style="border-bottom: 8px solid {{tag.color}}; box-sizing:border-box;"><a href="/tag/{{ tag.pk }}">{{ tag.tag }}</a></th>{% endfor %}
     </thead>
     {% for room, tags_list in rooms_and_tags %}
     <tr class="searchable">

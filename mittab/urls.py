@@ -60,9 +60,14 @@ urlpatterns = [
         views.room_check_in,
         name="room_check_in"),
     url(r"^batch_room_checkin/$", views.batch_checkin, name="batch_room_checkin"),
-    url(r"^room/(\d+)/tags/(\w+)/$",
-        views.room_tag,
-        name="room_tag"),
+    url(r"^room/(\d+)/toggle_tag/(\w+)/$",
+        views.room_tag_toggle,
+        name="room_tag_toggle"),
+    
+    url(r"^delete_room_tag/(\d+)/$",
+        views.delete_room_tag,
+        name="delete_room_tag"),
+    
     url(r"^batch_room_tag/$", views.batch_room_tag, name="batch_room_tag"),
     url(r"^add_room_tag/$", views.add_room_tag, name="add_room_tag"),
     url(r"^tag/(\d+)/$", views.view_tag, name="view_tag"),

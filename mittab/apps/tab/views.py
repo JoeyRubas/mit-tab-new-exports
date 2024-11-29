@@ -240,8 +240,20 @@ def view_tag(request, tag_id):
     return render(request, "common/data_entry.html", {
         "form": form,
         "links": [],
+        "tag_obj": tag,
         "title": "Viewing Tag: %s" % (tag.tag)
     })
+
+def delete_room_tag(request, tag_id):
+    if request.method == "POST":
+        tag_id = request.POST.get("tag_id")
+        try:
+            tag = RoomTag.objects.get(pk=tag_id)
+            tag.delete()
+            return redirect_and_flash_success(request, "Tag deleted successfully", path=reverse("batch_room_tag"))
+        except RoomTag.DoesNotExist:
+            return redirect_and_flash_error(request, "Tag not found")
+    return redirect_and_flash_error(request, "Invalid request")
 
 
 def enter_room(request):
@@ -321,7 +333,7 @@ def batch_room_tag(request):
     })
 
 @permission_required("tab.tab_settings.can_change", login_url="/403")
-def room_tag(request, room_id, tag_id):
+def room_tag_toggle(request, room_id, tag_id):
     room_id, tag_id  = int(room_id), int(tag_id)
     room = get_object_or_404(Room, pk=room_id)
     tag = get_object_or_404(RoomTag, pk=tag_id)

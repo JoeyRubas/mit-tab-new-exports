@@ -10,7 +10,7 @@ function roomBatchTag(target, isTagged) {
     const $label = $(`label[for=${$target.attr("id")}]`);
     $label.text(isTagged ? "Tagged" : "Untagged");
 
-    const url = `/room/${roomId}/tags/${tagId}/`;
+    const url = `/room/${roomId}/toggle_tag/${tagId}/`;
     const method = isTagged ? "POST" : "DELETE";
 
     $.ajax({
