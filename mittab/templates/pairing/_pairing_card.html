@@ -111,7 +111,7 @@
         {% if pairing.judges.all|length > 1 %}
         <a class="btn-sm btn-block btn-warning" href="/round/{{pairing.id}}/result/{{pairing.judges.all|length}}/">Enter Panel</a>
         {% endif %}
-        <a class="btn-sm btn-block btn-light" href="/room/{{pairing.room.id}}" >
+        <a class="btn-sm btn-block btn-light" href="/room/{{pairing.room.id}}" style="background-color: {{pairing.room.get_color}};">
           <i class="far fa-building"></i> {{pairing.room.name}}
         </a>
         <a class="btn-sm btn-block btn-light" href="/admin/tab/round/{{pairing.id}}/change/">

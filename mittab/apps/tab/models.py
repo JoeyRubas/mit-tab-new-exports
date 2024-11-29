@@ -388,6 +388,12 @@ class Room(models.Model):
                                           round_number=round_number).exists()
     def is_tagged_with(self, tag_id):
         return self.tags.filter(pk=tag_id).exists()
+    
+    def get_color(self):
+        highest_priority_tag = self.tags.order_by('-priority').first()
+        if highest_priority_tag:
+            return highest_priority_tag.color
+        return None  # default color if no tags are associated
 
     class Meta:
         ordering = ["name"]
@@ -609,8 +615,8 @@ class RoomTag(models.Model):
     tag = models.CharField(max_length=255)
     priority = models.DecimalField(max_digits=4, decimal_places=2)
     color = models.CharField(max_length=7, default="#000000")
-    tagged_judges = models.ManyToManyField(Judge, through='RoomTagAssociation', related_name='tagged_room_tags', on_delete=models.CASCADE)
-    tagged_teams = models.ManyToManyField(Team, through='RoomTagAssociation', related_name='tagged_room_tags', on_delete=models.CASCADE)
+    tagged_judges = models.ManyToManyField(Judge, through='RoomTagAssociation', related_name='tagged_room_tags')
+    tagged_teams = models.ManyToManyField(Team, through='RoomTagAssociation', related_name='tagged_room_tags')
 
     def __str__(self):
         return self.tag
