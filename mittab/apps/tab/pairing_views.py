@@ -289,36 +289,34 @@ def alternative_judges(request, round_id, judge_id=None):
     return render(request, "pairing/judge_dropdown.html", locals())
 
 def alternative_rooms(request, round_id, room_id):
-    round_obj = Round.objects.get(id=int(round_id))
+    # Fetch the round object and its required tags
+    round_obj = Round.objects.select_related().get(id=int(round_id))
     round_number = round_obj.round_number
+    required_tags = set(round_obj.get_required_tags())
 
-    try:
-        current_room_id = int(room_id)
-        current_room_obj = Room.objects.get(id=current_room_id)
-    except (ValueError, Room.DoesNotExist):
-        current_room_obj = None
+    # Get the current room if valid
+    current_room_obj = None
+    if room_id.isdigit():
+        try:
+            current_room_obj = Room.objects.get(id=int(room_id))
+        except Room.DoesNotExist:
+            pass
 
-    # Fetch all rooms checked in for the given round
-    checked_in_rooms = sorted(
-        [r.room for r in RoomCheckIn.objects.filter(round_number=round_number).select_related("room")],
-        key=lambda r: r.rank,
-        reverse=True
+    # Fetch all rooms checked in for the given round, ordered by rank
+    checked_in_rooms = Room.objects.filter(
+        roomcheckin__round_number=round_number
+    ).prefetch_related("tags").order_by("-rank")
+
+    # Categorize rooms
+    tags_met = [room for room in checked_in_rooms if required_tags.issubset(set(room.tags.all()))]
+    paired_rooms_ids = set(
+        Round.objects.filter(round_number=round_number, room__in=tags_met).values_list("room_id", flat=True)
     )
-
-    # Rooms meeting tag requirements
-    tags_met = [room for room in checked_in_rooms if round_obj.get_required_tags().issubset(set(room.tags.all()))]
-
-    # Viable rooms not paired in
-    viable_rooms = [
-        room for room in tags_met
-        if not Round.objects.filter(round_number=round_number, room=room).exists()
-    ]
-
-    # Viable rooms already paired in
-    viable_paired_rooms = [room for room in tags_met if room not in viable_rooms]
-
-    # Other rooms not meeting tag requirements
+    viable_rooms = [room for room in tags_met if room.id not in paired_rooms_ids]
+    viable_paired_rooms = [room for room in tags_met if room.id in paired_rooms_ids]
     other_rooms = [room for room in checked_in_rooms if room not in tags_met]
+
+    # Render the response
     return render(request, "pairing/room_dropdown.html", {
         "current_room": current_room_obj,
         "round_obj": round_obj,
@@ -400,7 +398,7 @@ def assign_team(request, round_id, position, team_id):
 def room_tag_warnings(request, round_id):
     rount_id = int(round_id)
     pairing = get_object_or_404(Round, id=round_id)
-    return JsonResponse({'room_tag_warning': pairing.get_room_tag_warnings()})
+    return JsonResponse({'room_tag_warnings': pairing.get_room_tag_warnings()})
 
 @permission_required("tab.tab_settings.can_change", login_url="/403/")
 def assign_judge(request, round_id, judge_id, remove_id=None):
@@ -441,8 +439,10 @@ def assign_room(request, round_id, room_id, remove_id=None):
         room_obj = Room.objects.get(id=int(room_id))
         round_obj.room = room_obj
         round_obj.save()
+        room_color = room_obj.get_color()
         data = {
             "success": True,
+            "room_color": room_color if room_color else "",
             "room_id": room_obj.id,
             "round_id": round_obj.id,
             "room_name": room_obj.name,

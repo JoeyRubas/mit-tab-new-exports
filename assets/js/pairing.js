@@ -154,7 +154,7 @@ function assignRoom(e) {
       $buttonWrapper.attr("room-id", result.room_id);
 
       $button.html(`${result.room_name}`);
-      $(`.room span[round-id=${roundId}] .room-toggle`);
+      $(`.room span[round-id=${roundId}] .room-toggle`).css("background-color", result.room_color);
       refreshRoomWarning(roundId);
     }
   });
@@ -220,24 +220,22 @@ function refreshRoomWarning(roundId) {
   $.ajax({
     url: `/pairings/room_tag_warnings/${roundId}`,
     success(result) {
-      const warningId = `room-warning-${roundId}`;
-      const warningElement = $(`#${warningId}`);
-
-      if (result.get_room_tag_warnings) {
+      const warningParent = $(`.warning-parent[round-id=${roundId}]`);
+      const warningElement = $(`.room-warning[round-id=${roundId}]`);
+      if (result.room_tag_warnings) {
         if (warningElement.length) {
-          // Update the text of the existing warning
+          console.log("Updating warning");
           warningElement.text(result.room_tag_warnings);
         } else {
-          // Create and prepend a new warning if it doesn't exist
-          const warningHTML = `
-            <div id="${warningId}" class="alert alert-danger text-center" role="alert" style="font-size: 1.5em;">
+          console.log("Adding warning:" + result.room_tag_warnings);
+          warningParent.append(
+            `<div class="alert alert-danger text-center room-warning" round-id="${roundId}" role="alert" style="font-size: 1.5em;">
               ${result.room_tag_warnings}
-            </div>
-          `;
-          $(`.row[round-id=${roundId}]`).prepend(warningHTML);
+            </div>`
+          );
         }
       } else {
-        // Remove the warning if there are no warnings
+        console.log("Removing warning");
         warningElement.remove();
       }
     },
