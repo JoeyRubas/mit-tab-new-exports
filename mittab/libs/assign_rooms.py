@@ -10,13 +10,12 @@ def add_rooms():
     no_seeding = TabSettings.get("disable_room_seeding", 0)
     #Clear any existing room assignments
     Round.objects.filter(round_number=TabSettings.get("cur_round") - 1).update(room=None)
-    Round.objects.filter(round_number=TabSettings.get("cur_round") - 1).filter(room_warning__isnull=False).update(room_warning=None)
     round_number = TabSettings.get("cur_round") - 1
 
     rooms = RoomCheckIn.objects.filter(round_number=round_number).select_related("room")
     rooms = sorted((r.room for r in rooms), key=lambda r: r.rank, reverse=True)
     pairings = list(Round.objects.filter(round_number=round_number).prefetch_related(
-        "room_tags", "gov_team", "opp_team"
+        "gov_team", "opp_team"
     ))#not using tab settings get pairing function because we don't need the pre-fetches
     
     if no_seeding:
@@ -31,7 +30,7 @@ def add_rooms():
     before_graph_time = time.time()
     room_tags_dict = {room.id: set(room.tags.values_list('id', 'priority')) for room in rooms}
     for pairing_i, pairing in enumerate(pairings):
-        pairing_tags = set(pairing.room_tags.values_list('id', 'priority'))
+        pairing_tags = {(tag.id, tag.priority) for tag in pairing.get_required_tags()}
         for room_i, room in enumerate(rooms):
             weight = 0
             
@@ -39,7 +38,6 @@ def add_rooms():
             room_tags = room_tags_dict[room.id]
             unfulfilled_tags = pairing_tags - room_tags
             
-            #tag[1] is the priority
             #Multiply by 1000 gaurenteed lower bonuses and pentalties are secondary to tag fulfillment
             weight -= 1000 * sum(tag[1] for tag in unfulfilled_tags) 
 
@@ -56,18 +54,21 @@ def add_rooms():
     after_graph_time = time.time()
     room_assignments = mwmatching.maxWeightMatching(graph_edges, maxcardinality=True)
     after_matching_time = time.time()
+
     if -1 in room_assignments[:len(pairings)]:
         pairing_list = room_assignments[: len(pairings)]
         bad_pairing = pairings[pairing_list.index(-1)]
         raise errors.RoomAssignmentError(
             "Could not find a room for: %s" % str(bad_pairing)
             )
-    round_updates = []
+
     for pairing_i, pairing in enumerate(pairings):
         room_i = room_assignments[pairing_i] - len(pairings)
         pairing.room = rooms[room_i]
-        round_updates.append(pairing)
-    Round.objects.bulk_update(round_updates, ['room'])
+        pairing.save()
+        
+
+
     after_save_time = time.time()
     print("Graph prep time", before_graph_time - function_start_time)
     print("Graph time: ", after_graph_time - before_graph_time)

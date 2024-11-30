@@ -218,21 +218,26 @@ function togglePairingRelease(event) {
 
 function refreshRoomWarning(roundId) {
   $.ajax({
-    url: `/pairings/room_warning/${roundId}`,
+    url: `/pairings/room_tag_warnings/${roundId}`,
     success(result) {
-      const warningElement = $(`.row[round-id=${roundId}] .alert-danger`);
-      if (result.room_warning) {
+      const warningId = `room-warning-${roundId}`;
+      const warningElement = $(`#${warningId}`);
+
+      if (result.get_room_tag_warnings) {
         if (warningElement.length) {
-          warningElement.text(result.room_warning);
+          // Update the text of the existing warning
+          warningElement.text(result.room_tag_warnings);
         } else {
+          // Create and prepend a new warning if it doesn't exist
           const warningHTML = `
-            <div class="alert alert-danger text-center" role="alert" style="font-size: 1.5em;">
-              ${result.room_warning}
+            <div id="${warningId}" class="alert alert-danger text-center" role="alert" style="font-size: 1.5em;">
+              ${result.room_tag_warnings}
             </div>
           `;
           $(`.row[round-id=${roundId}]`).prepend(warningHTML);
         }
       } else {
+        // Remove the warning if there are no warnings
         warningElement.remove();
       }
     },

@@ -159,9 +159,9 @@ urlpatterns = [
         pairing_views.assign_room,
         name="swap_judge"),
     url(
-        r"^pairings/room_warning/(\d+)/$",
-        pairing_views.room_warning,
-        name="room_warning"
+        r"^pairings/room_tag_warnings/(\d+)/$",
+        pairing_views.room_tag_warnings,
+        name="room_tag_warnings"
     ),
     url(r"^pairing/pair_round/$", pairing_views.pair_round, name="pair_round"),
     url(r"^pairing/assign_judges_to_pairing/$",

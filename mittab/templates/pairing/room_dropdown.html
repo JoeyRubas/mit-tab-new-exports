@@ -11,7 +11,7 @@
 
   <h6 class="text-center dropdown-header">Viable Rooms Not Paired In</h6>
   {% for room in viable_rooms %}
-  <a href="#" class="dropdown-item room-assign searchable" style="background-color: {{ room.get_color }};" room-id="{{room.id}}" round-id="{{round_obj.id}}" current-room-id="{{current_room_id}}">
+  <a href="#" class="dropdown-item room-assign searchable" style="background-color: {{ room.get_color }};" room-id="{{room.id}}" round-id="{{round_obj.id}}" current-room-id="{{current_room.id}}">
     {{room.name}} test
   </a>
   {% empty %}
@@ -21,7 +21,7 @@
   <div class="dropdown-divider"></div>
   <h6 class="text-center dropdown-header">Viable Rooms Paired In</h6>
   {% for room in viable_paired_rooms %}
-  <a href="#" class="dropdown-item room-assign searchable" style="background-color: {{room.get_color}};" room-id="{{room.id}}" round-id="{{round_obj.id}}" current-room-id="{{current_room_id}}">
+  <a href="#" class="dropdown-item room-assign searchable" style="background-color: {{room.get_color}};" room-id="{{room.id}}" round-id="{{round_obj.id}}" current-room-id="{{current_room.id}}">
     {{room.name}}
   </a>
   {% empty %}
@@ -31,7 +31,7 @@
   <div class="dropdown-divider"></div>
   <h6 class="text-center dropdown-header">Other Rooms</h6>
   {% for room in other_rooms %}
-  <a href="#" class="dropdown-item room-assign searchable" style="background-color: {{room.get_color}};" room-id="{{room.id}}" round-id="{{round_obj.id}}" current-room-id="{{current_room_id}}">
+  <a href="#" class="dropdown-item room-assign searchable" style="background-color: {{room.get_color}};" room-id="{{room.id}}" round-id="{{round_obj.id}}" current-room-id="{{current_room.id}}">
     {{room.name}}
   </a>
   {% empty %}

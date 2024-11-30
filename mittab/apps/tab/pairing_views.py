@@ -296,7 +296,7 @@ def alternative_rooms(request, round_id, room_id):
         current_room_id = int(room_id)
         current_room_obj = Room.objects.get(id=current_room_id)
     except (ValueError, Room.DoesNotExist):
-        ccurrent_room_obj = None
+        current_room_obj = None
 
     # Fetch all rooms checked in for the given round
     checked_in_rooms = sorted(
@@ -306,7 +306,7 @@ def alternative_rooms(request, round_id, room_id):
     )
 
     # Rooms meeting tag requirements
-    tags_met = [room for room in checked_in_rooms if set(round_obj.room_tags.all()).issubset(set(room.tags.all()))]
+    tags_met = [room for room in checked_in_rooms if round_obj.get_required_tags().issubset(set(room.tags.all()))]
 
     # Viable rooms not paired in
     viable_rooms = [
@@ -397,9 +397,10 @@ def assign_team(request, round_id, position, team_id):
     return JsonResponse(data)
 
 
-def room_warning(request, round_id):
+def room_tag_warnings(request, round_id):
+    rount_id = int(round_id)
     pairing = get_object_or_404(Round, id=round_id)
-    return JsonResponse({'room_warning': pairing.get_room_warning()})
+    return JsonResponse({'room_tag_warning': pairing.get_room_tag_warnings()})
 
 @permission_required("tab.tab_settings.can_change", login_url="/403/")
 def assign_judge(request, round_id, judge_id, remove_id=None):

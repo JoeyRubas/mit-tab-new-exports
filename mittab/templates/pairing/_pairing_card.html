@@ -1,8 +1,8 @@
 <div class="card bg-light pairing-card mb-3">
   <div class="card-body container-fluid">
-    {% if pairing.room_warning %}
-    <div class="alert alert-danger text-center" role="alert" style="font-size: 1.5em;">
-      {{ pairing.room_warning }}
+    {% if pairing.get_room_tag_warnings %}
+    <div class="alert alert-danger text-center" id="room-warning-{{ roundId }}" role="alert" style="font-size: 1.5em;">
+      {{ pairing.get_room_tag_warnings }}
     </div>
     {% endif %}
     <div class="row" round-id="{{pairing.id}}">

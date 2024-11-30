@@ -1,5 +1,5 @@
+import math
 import random
-import time as Time
 from mittab.apps.tab.models import Room, RoomCheckIn, RoomTag, Round, TabSettings
 from django.core.management import BaseCommand
 
@@ -8,24 +8,46 @@ from mittab.libs import tab_logic
 class Command(BaseCommand):
     help = "Assign room tags to all rooms"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--num_tags',
+            type=int,
+            default=100,
+            help='Number of tags to create'
+        )
+        parser.add_argument(
+            '--tags_per_round',
+            type=int,
+            default=10,
+            help='Number of tags to assign per round'
+        )
+        parser.add_argument(
+            '--valid_rooms_per_round',
+            type=int,
+            default=2,
+            help='Number of valid rooms per round'
+        )
+        parser.add_argument(
+            '--randomize',
+            type = bool,
+            default = True,
+            help = 'Randomize the number of tags per round and valid rooms per round'
+        )
+
     def handle(self, *args, **kwargs):
         """
         Create tags and assign them efficiently
         """
-        self.num_tags = 100
-        self.tags_per_debater_judge = 10
-        self.valid_rooms_per_round = 1
+        self.num_tags = int(kwargs['num_tags'])
+        self.tags_per_round = int(kwargs['tags_per_round'])
+        self.valid_rooms_per_round = int(kwargs['valid_rooms_per_round'])
+        self.randomize = True
         self.make_tags()
         self.assign_tags()
 
     def make_tags(self):
         # Delete all existing tags
         RoomTag.objects.all().delete()
-
-        # Clear room tags in rounds
-        rounds = Round.objects.all()
-        for roundobj in rounds:
-            roundobj.room_tags.clear()
 
         # Bulk create new tags
         tags = [
@@ -42,36 +64,36 @@ class Command(BaseCommand):
             "gov_team", "opp_team", "chair"
         )
         rooms = RoomCheckIn.objects.filter(round_number=cur_round).select_related("room")
-        rooms = sorted((r.room for r in rooms), key=lambda r: r.rank, reverse=True)
+        all_rooms = sorted((r.room for r in rooms), key=lambda r: r.rank, reverse=True)
+        unused_rooms = list(all_rooms)
         all_tags = list(RoomTag.objects.all())
-        times = []
-        time_keys = ["Selecting random tags", "Assigning tags to teams and judges", "Assigning tags to rooms", "Saving pairings"]
+        if self.randomize:
+            max_rooms_per_round = math.ceil(len(rooms)/4)
+
         for pairing in rounds:
-            times.append([])
             print(f"Assigning tags to pairing {pairing}")
-            times[-1].append(Time.time())  # before_select
-            # Select random tags
-            random_tags = random.sample(all_tags, self.tags_per_debater_judge)
+
+            if self.randomize:
+                self.tags_per_round = min(self.num_tags, max(1, int(random.betavariate(2, 5) * self.num_tags)))
+            random_tags = random.sample(all_tags, self.tags_per_round)
             #split random tags into three lists with random lengths who's union is random_tags
             idx1 = random.randint(0, len(random_tags)-2)
             idx2 = random.randint(idx1, len(random_tags)-1)
-            times[-1].append(Time.time())  # after_select
+
             
             pairing.gov_team.room_tags.add(*random_tags[:idx1])
+            pairing.gov_team.save()
             pairing.opp_team.room_tags.add(*random_tags[idx1:idx2])
+            pairing.opp_team.save()
             pairing.chair.room_tags.add(*random_tags[idx2:])
-            times[-1].append(Time.time())  # after_round_assign
+            pairing.chair.save()
+
             # Assign tags to valid rooms
-            for _ in range(self.valid_rooms_per_round-1):
-                room = rooms.pop()
+            if self.randomize:
+                self.valid_rooms_per_round = random.randint(1, max_rooms_per_round)
+            for _ in range(self.valid_rooms_per_round):
+                room = unused_rooms.pop()
+                if not unused_rooms:
+                    unused_rooms = list(all_rooms)
                 room.tags.add(*random_tags)
                 room.save()
-            times[-1].append(Time.time())  # after_room_assign
-            pairing.save()
-            times[-1].append(Time.time())  # after_save
-        #Time summary:
-        total_time = sum(time[-1] - time[0] for time in times)
-        time_by_section = [sum(time[i+1] - time[i] for time in times) for i in range(len(times[0])-1)]
-        for i, key in enumerate(time_keys):
-            print(f"{key}: {time_by_section[i]/total_time*100:.2f}%")
-        

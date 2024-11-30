@@ -521,7 +521,6 @@ class Round(models.Model):
         return "Round {} between {} and {}".format(self.round_number,
                                                    self.gov_team,
                                                    self.opp_team)
-
     def save(self,
              force_insert=False,
              force_update=False,
@@ -535,19 +534,31 @@ class Round(models.Model):
             no_shows.delete()
         super(Round, self).save(force_insert, force_update, using,
                                 update_fields)
-        
-    def room_tag_warnings(self):
-        required_tags = set()
-        required_tags.add(*self.gov_team.room_tags.all())
-        required_tags.add(*self.opp_team.room_tags.all())
-        required_tags.add(**(judge.room_tags.all() for judge in self.judges.all()))
-        missing_tags = required_tags - set(self.room.tags.all())
-
+    
     def delete(self, using=None, keep_parents=False):
         rounds = RoundStats.objects.filter(round=self)
         for round_obj in rounds:
             round_obj.delete()
         super(Round, self).delete(using, keep_parents)
+
+    def get_required_tags(self):
+        required_tags = set()
+        required_tags.update(self.gov_team.room_tags.all())
+        required_tags.update(self.opp_team.room_tags.all())
+        for judge in self.judges.all():
+            required_tags.update(judge.room_tags.all())
+        return required_tags
+    
+    def get_room_tag_warnings(self):
+        if not self.room:
+            return None
+        required_tags = self.get_required_tags()
+        missing_tags = required_tags - set(self.room.tags.all())
+        if missing_tags:
+            return "Warning: Unmet room tags: %s" % ", ".join(tag.tag for tag in missing_tags)
+        else:
+            return None
+
 
 
 class Bye(models.Model):
