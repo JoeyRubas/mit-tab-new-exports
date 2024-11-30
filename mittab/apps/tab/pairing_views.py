@@ -383,7 +383,6 @@ def assign_team(request, round_id, position, team_id):
             round_obj.opp_team = team_obj
         else:
             raise ValueError("Got invalid position: " + position)
-        round_obj.save()
 
         data = {
             "success": True,
@@ -400,7 +399,7 @@ def assign_team(request, round_id, position, team_id):
 
 def room_warning(request, round_id):
     pairing = get_object_or_404(Round, id=round_id)
-    return JsonResponse({'room_warning': pairing.room_warning})
+    return JsonResponse({'room_warning': pairing.get_room_warning()})
 
 @permission_required("tab.tab_settings.can_change", login_url="/403/")
 def assign_judge(request, round_id, judge_id, remove_id=None):

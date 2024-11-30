@@ -1,4 +1,5 @@
 import random
+from typing import Counter
 
 from haikunator import Haikunator
 from django.db import models
@@ -512,26 +513,6 @@ class Round(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, blank=True, null=True)
     victor = models.IntegerField(choices=VICTOR_CHOICES, default=0)
     
-    room_tags = models.ManyToManyField("RoomTag", blank=True)
-    room_tag_priority = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    room_warning = models.TextField(blank=True, null=True)
-
-    def populate_room_tags(self):
-        self.room_tags.clear()
-        for tag in self.gov_team.room_tags.all():
-            self.room_tags.add(tag)
-        for tag in self.opp_team.room_tags.all():
-            self.room_tags.add(tag)
-        for judge in self.judges.all():
-            for tag in judge.room_tags.all():
-                self.room_tags.add(tag)
-        self.room_tag_priority = sum(tag.priority for tag in self.room_tags.all())
-        missing_tags = set(self.room_tags.all()).difference(set(self.room.tags.all()))
-        if missing_tags:
-            self.room_warning = "Warning: Unmet room tags: " + ", ".join([tag.tag for tag in missing_tags])
-        else:
-            self.room_warning = None
-
     def clean(self):
         if self.pk and self.chair not in self.judges.all():
             raise ValidationError("Chair must be a judge in the round")
@@ -552,10 +533,15 @@ class Round(models.Model):
 
         if no_shows:
             no_shows.delete()
-        self.populate_room_tags()
         super(Round, self).save(force_insert, force_update, using,
                                 update_fields)
         
+    def room_tag_warnings(self):
+        required_tags = set()
+        required_tags.add(*self.gov_team.room_tags.all())
+        required_tags.add(*self.opp_team.room_tags.all())
+        required_tags.add(**(judge.room_tags.all() for judge in self.judges.all()))
+        missing_tags = required_tags - set(self.room.tags.all())
 
     def delete(self, using=None, keep_parents=False):
         rounds = RoundStats.objects.filter(round=self)
@@ -633,15 +619,16 @@ class RoomTag(models.Model):
 
 
     def save(self, *args, **kwargs):
-        # Assign default color if not explicitly set
         if not self.color or self.color == "#000000":
-            used_colors = set(RoomTag.objects.values_list('color', flat=True))
-            available_colors = [color for color in self.DEFAULT_COLORS if color not in used_colors]
+            used_colors = RoomTag.objects.values_list('color', flat=True)
+            available_colors = set(self.DEFAULT_COLORS) - set(used_colors)
             
             if available_colors:
-                self.color = available_colors[0]  # Assign the first unused color
+                self.color = available_colors.pop()  # Assign the first unused color
             else:
-                self.color = "#000000"  # Fallback if all default colors are used
+                # Select the color with the least uses
+                cts = Counter(used_colors)
+                self.color = min(cts, key=cts.get)
 
         super().save(*args, **kwargs)
 
