@@ -124,3 +124,5 @@ typings/
 *.dump.sql
 
 .venv/
+
+out.txt

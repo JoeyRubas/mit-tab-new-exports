@@ -169,17 +169,18 @@ def room_check_in(request, room_id, round_number):
 
 def batch_room_tag(request):
     rooms_and_tags = []
-
-    room_tags =  list(RoomTag.objects.all())
-    for room in Room.objects.all():
-        tags = []
-        for tag in room_tags:
-            tags.append((tag, room.is_tagged_with(tag.pk)))
-        rooms_and_tags.append((room, tags))
+    tags = list(RoomTag.objects.order_by("-priority"))
+    tag_count = len(tags)   
+    for room in Room.objects.prefetch_related("tags").all():
+        row = (room, [[tag, False] for tag in tags])
+        for tag in room.tags.all():
+            row[1][tags.index(tag)][1] = True
+        rooms_and_tags.append(row)  
     return render(request, "tab/room_batch_tag.html", {
         "rooms_and_tags": rooms_and_tags,
-        "tags": room_tags
+        "tags": tags
     })
+
 
 @permission_required("tab.tab_settings.can_change", login_url="/403")
 def room_tag_toggle(request, room_id, tag_id):
