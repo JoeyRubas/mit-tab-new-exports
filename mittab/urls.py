@@ -1,11 +1,11 @@
 from django.views import i18n
 from django.conf.urls import url, include
-from django.urls import path
 from django.contrib import admin
 from django.contrib.auth.views import LoginView
 
 import mittab.settings as settings
-from mittab.apps.tab.views import views, room_views, team_views, debater_views, judge_views, pairing_views, school_views, outround_pairing_views
+from mittab.apps.tab.views import views
+from mittab.apps.tab.urls import debater_urls, judge_urls, outround_pairing_urls, pairing_urls, room_urls, school_urls, team_urls
 
 
 admin.autodiscover()
@@ -25,48 +25,6 @@ urlpatterns = [
         LoginView.as_view(template_name="registration/login.html"),
         name="tab_login"),
 
-    # Judge related
-    url(r"^judges/", judge_views.public_view_judges, name="public_judges"),
-    url(r"^judge/(\d+)/$", judge_views.view_judge, name="view_judge"),
-    url(r"^judge/(\d+)/scratches/add/(\d+)/",
-        judge_views.add_scratches,
-        name="add_scratches"),
-    url(r"^judge/(\d+)/scratches/view/",
-        judge_views.view_scratches,
-        name="view_scratches"),
-    url(r"^judge/(\d+)/check_ins/round/(\d+)/$",
-        judge_views.judge_check_in,
-        name="judge_check_in"),
-    url(r"^view_judges/$", judge_views.view_judges, name="view_judges"),
-    url(r"^enter_judge/$", judge_views.enter_judge, name="enter_judge"),
-    url(r"^batch_checkin/$", judge_views.batch_checkin, name="batch_checkin"),
-
-    # School related
-    url(r"^school/(\d+)/$", school_views.view_school, name="view_school"),
-    url(r"^school/(\d+)/delete/$", school_views.delete_school, name="delete_school"),
-    url(r"^view_schools/$", school_views.view_schools, name="view_schools"),
-    url(r"^enter_school/$", school_views.enter_school, name="enter_school"),
-
-    # Room related
-    url(r"^room/(\d+)/$", room_views.view_room, name="view_room"),
-    url(r"^view_rooms/$", room_views.view_rooms, name="view_rooms"),
-    url(r"^enter_room/$", room_views.enter_room, name="enter_room"),
-    url(r"^room/(\d+)/check_ins/round/(\d+)/$",
-        room_views.room_check_in,
-        name="room_check_in"),
-    url(r"^batch_room_checkin/$", room_views.batch_checkin, name="batch_room_checkin"),
-    url(r"^room/(\d+)/toggle_tag/(\w+)/$",
-        room_views.room_tag_toggle,
-        name="room_tag_toggle"),
-    
-    url(r"^delete_room_tag/(\d+)/$",
-        room_views.delete_room_tag,
-        name="delete_room_tag"),
-    
-    url(r"^batch_room_tag/$", room_views.batch_room_tag, name="batch_room_tag"),
-    url(r"^add_room_tag/$", room_views.add_room_tag, name="add_room_tag"),
-    url(r"^tag/(\d+)/$", room_views.view_tag, name="view_tag"),
-
 
     # Scratch related
     url(r"^judge/(\d+)/scratches/delete/(\d+)/",
@@ -78,188 +36,10 @@ urlpatterns = [
     url(r"^scratches/view/", views.view_scratches, name="view_scratches"),
     url(r"^enter_scratch/", views.add_scratch, name="add_scratch"),
 
-    # Team related
-    url(r"^teams/", team_views.public_view_teams, name="public_teams"),
-    url(r"^team/(\d+)/$", team_views.view_team, name="view_team"),
-    url(r"^team/(\d+)/scratches/add/(\d+)/",
-        team_views.add_scratches,
-        name="add_scratches"),
-    url(r"^team/(\d+)/scratches/view/",
-        team_views.view_scratches,
-        name="view_scratches_team"),
-    url(r"^view_teams/$", team_views.view_teams, name="view_teams"),
-    url(r"^enter_team/$", team_views.enter_team, name="enter_team"),
-    url(r"^all_tab_cards/$", team_views.all_tab_cards, name="all_tab_cards"),
-    url(r"^team/card/(\d+)/$", team_views.tab_card, name="tab_card"),
-    url(r"^team/card/(\d+)/pretty/$",
-        team_views.pretty_tab_card,
-        name="pretty_tab_card"),
-    url(r"^team/ranking/$", team_views.rank_teams_ajax,
-        name="rank_teams_ajax"),
-    url(r"^team/rank/$", team_views.rank_teams, name="rank_teams"),
-
-
-    # Debater related
-    url(r"^debater/(\d+)/$", debater_views.view_debater, name="view_debater"),
-    url(r"^view_debaters/$", debater_views.view_debaters,
-        name="view_debaters"),
-    url(r"^enter_debater/$", debater_views.enter_debater,
-        name="enter_debater"),
-    url(r"^debater/ranking/$",
-        debater_views.rank_debaters_ajax,
-        name="rank_debaters_ajax"),
-    url(r"^debater/rank/$", debater_views.rank_debaters, name="rank_debaters"),
-
-    # Pairing related
-    url(r"^pairings/status/$", pairing_views.view_status, name="view_status"),
-    url(r"^pairings/view_rounds/$",
-        pairing_views.view_rounds,
-        name="view_rounds"),
-    url(r"^round/(\d+)/$", pairing_views.view_round, name="view_round"),
-    url(r"^round/(\d+)/stats/$", pairing_views.team_stats, name="team_stats"),
-    url(r"^round/(\d+)/result/$",
-        pairing_views.enter_result,
-        name="enter_result"),
-    url(r"^round/(\d+)/result/(\d+)/$",
-        pairing_views.enter_multiple_results,
-        name="enter_multiple_results"),
-    url(r"^round/(\d+)/alternative_judges/(\d+)/$",
-        pairing_views.alternative_judges,
-        name="round_alternative_judges"),
-    url(r"^round/(\d+)/(\d+)/alternative_teams/(gov|opp)/$",
-        pairing_views.alternative_teams,
-        name="round_alternative_teams"),
-    url(r"^round/(\d+)/alternative_judges/$",
-        pairing_views.alternative_judges,
-        name="alternative_judges"),
-    url(r"^round/(\d+)/alternative_rooms/$",
-        pairing_views.alternative_rooms,
-        name="alternative_rooms"),
-    url(r"^round/(\d+)/alternative_rooms/(\d+)$",
-        pairing_views.alternative_rooms,
-        name="alternative_rooms"),
-    url(r"^round/(\d+)/assign_judge/(\d+)/$",
-        pairing_views.assign_judge,
-        name="assign_judge"),
-    url(r"^pairings/assign_team/(\d+)/(gov|opp)/(\d+)/$",
-        pairing_views.assign_team,
-        name="assign_team"),
-    url(r"^round/(\d+)/assign_judge/(\d+)/(\d+)/$",
-        pairing_views.assign_judge,
-        name="swap_judge"),
-        url(r"^round/(\d+)/assign_room/(\d+)/$",
-        pairing_views.assign_room,
-        name="assign_room"),
-    url(r"^round/(\d+)/assign_room/(\d+)/(\d+)/$",
-        pairing_views.assign_room,
-        name="swap_judge"),
-    url(
-        r"^pairings/room_tag_warnings/(\d+)/$",
-        pairing_views.room_tag_warnings,
-        name="room_tag_warnings"
-    ),
-    url(r"^pairing/pair_round/$", pairing_views.pair_round, name="pair_round"),
-    url(r"^pairing/assign_judges_to_pairing/$",
-        pairing_views.assign_judges_to_pairing,
-        name="assign_judges_to_pairing"),
-    url(r"^pairing/assign_rooms_to_pairing/$",
-        pairing_views.assign_rooms_to_pairing,
-        name="assign_rooms_to_pairing"),
-    url(r"^pairing/confirm_start_tourny/$",
-        pairing_views.confirm_start_new_tourny,
-        name="confirm_start_tourny"),
-    url(r"^pairing/start_tourny/$",
-        pairing_views.start_new_tourny,
-        name="start_tourny"),
-    url(r"^pairings/pairinglist/$",
-        pairing_views.pretty_pair,
-        name="pretty_pair"),
-    url(r"^pairings/missing_ballots/$",
-        pairing_views.missing_ballots,
-        name="missing_ballots"),
-    url(r"^pairings/pairinglist/printable/$",
-        pairing_views.pretty_pair_print,
-        name="pretty_pair_print"),
-    url(r"^pairing/backup/$",
-        pairing_views.manual_backup,
-        name="manual_backup"),
-    url(r"^pairing/release/$",
-        pairing_views.toggle_pairing_released,
-        name="toggle_pairing_released"),
-    url(r"^pairing/view_backups/$",
-        pairing_views.view_backups,
-        name="view_backups"),
-    url(r"^e_ballots/$", pairing_views.e_ballot_search,
-        name="e_ballot_search"),
-    url(r"e_ballots/(\S+)/$",
-        pairing_views.enter_e_ballot,
-        name="enter_e_ballot"),
-
-    # Outround related
-    url(r"break/",
-        outround_pairing_views.break_teams,
-        name="break"),
-    path("outround_pairing/<int:type_of_round>/<int:num_teams>",
-         outround_pairing_views.outround_pairing_view,
-         name="outround_pairing_view"),
-    path("outround_pairing",
-         outround_pairing_views.outround_pairing_view,
-         name="outround_pairing_view_default"),
-    url(r"^outround/(\d+)/alternative_judges/(\d+)/$",
-        outround_pairing_views.alternative_judges,
-        name="outround_alternative_judges"),
-    url(r"^outround/(\d+)/(\d+)/alternative_teams/(gov|opp)/$",
-        outround_pairing_views.alternative_teams,
-        name="outround_alternative_teams"),
-    url(r"^outround/(\d+)/alternative_judges/$",
-        outround_pairing_views.alternative_judges,
-        name="outround_alternative_judges"),
-    url(r"^outround/(\d+)/assign_judge/(\d+)/$",
-        outround_pairing_views.assign_judge,
-        name="outround_assign_judge"),
-    url(r"^outround/pairings/assign_team/(\d+)/(gov|opp)/(\d+)/$",
-        outround_pairing_views.assign_team,
-        name="outround_assign_team"),
-    url(r"^outround/(\d+)/assign_judge/(\d+)/(\d+)/$",
-        outround_pairing_views.assign_judge,
-        name="outround_swap_judge"),
-    url(r"^outround/(\d+)/result/$",
-        outround_pairing_views.enter_result,
-        name="enter_result"),
-    path("outround_pairing/pair/<int:type_of_round>/<int:num_teams>/",
-         outround_pairing_views.pair_next_outround,
-         name="next_outround"),
-    path("outround_pairings/pairinglist/<int:type_of_round>/",
-         outround_pairing_views.pretty_pair,
-         name="outround_pretty_pair"),
-    path("outround_pairings/pairinglist/printable/<int:type_of_round>/",
-         outround_pairing_views.pretty_pair_print,
-         name="outround_pretty_pair_print"),
-    path("outround_pairing/release/<int:num_teams>/<int:type_of_round>/",
-         outround_pairing_views.toggle_pairing_released,
-         name="toggle_outround_pairing_released"),
-    path("outround_result/<int:type_of_round>",
-         outround_pairing_views.forum_view,
-         name="forum_view"),
-    path("outround_choice/<int:outround_id>",
-         outround_pairing_views.update_choice,
-         name="update_choice"),
-
     # Settings related
     url(r"^settings_form",
         views.settings_form,
         name="settings_form"),
-
-    # Backups
-    url(r"^backup/restore/(.+)/$",
-        pairing_views.restore_backup,
-        name="restore_backup"),
-    url(r"^backup/download/(.+)/$",
-        pairing_views.download_backup,
-        name="download_backup"),
-    url(r"^backup/(.+)/$", pairing_views.view_backup, name="view_backup"),
-    url(r"^upload_backup/$", pairing_views.upload_backup,
-        name="upload_backup"),
 
     # Data Upload
     url(r"^import_data/$", views.upload_data, name="upload_data"),
@@ -276,6 +56,15 @@ if settings.SILK_ENABLED:
         # Profiler
         url(r"^silk/", include("silk.urls", namespace="silk"))
     ]
+
+urlpatterns += debater_urls.urlpatterns
+urlpatterns += judge_urls.urlpatterns
+urlpatterns += outround_pairing_urls.urlpatterns
+urlpatterns += pairing_urls.urlpatterns
+urlpatterns += room_urls.urlpatterns
+urlpatterns += school_urls.urlpatterns
+urlpatterns += team_urls.urlpatterns
+
 
 handler403 = "mittab.apps.tab.views.views.render_403"
 handler404 = "mittab.apps.tab.views.views.render_404"
