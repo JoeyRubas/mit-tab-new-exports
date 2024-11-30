@@ -5,12 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.views import LoginView
 
 import mittab.settings as settings
-import mittab.apps.tab.views as views
-import mittab.apps.tab.judge_views as judge_views
-import mittab.apps.tab.team_views as team_views
-import mittab.apps.tab.debater_views as debater_views
-import mittab.apps.tab.pairing_views as pairing_views
-import mittab.apps.tab.outround_pairing_views as outround_pairing_views
+from mittab.apps.tab.views import views, room_views, team_views, debater_views, judge_views, pairing_views, school_views, outround_pairing_views
 
 
 admin.autodiscover()
@@ -47,30 +42,30 @@ urlpatterns = [
     url(r"^batch_checkin/$", judge_views.batch_checkin, name="batch_checkin"),
 
     # School related
-    url(r"^school/(\d+)/$", views.view_school, name="view_school"),
-    url(r"^school/(\d+)/delete/$", views.delete_school, name="delete_school"),
-    url(r"^view_schools/$", views.view_schools, name="view_schools"),
-    url(r"^enter_school/$", views.enter_school, name="enter_school"),
+    url(r"^school/(\d+)/$", school_views.view_school, name="view_school"),
+    url(r"^school/(\d+)/delete/$", school_views.delete_school, name="delete_school"),
+    url(r"^view_schools/$", school_views.view_schools, name="view_schools"),
+    url(r"^enter_school/$", school_views.enter_school, name="enter_school"),
 
     # Room related
-    url(r"^room/(\d+)/$", views.view_room, name="view_room"),
-    url(r"^view_rooms/$", views.view_rooms, name="view_rooms"),
-    url(r"^enter_room/$", views.enter_room, name="enter_room"),
+    url(r"^room/(\d+)/$", room_views.view_room, name="view_room"),
+    url(r"^view_rooms/$", room_views.view_rooms, name="view_rooms"),
+    url(r"^enter_room/$", room_views.enter_room, name="enter_room"),
     url(r"^room/(\d+)/check_ins/round/(\d+)/$",
-        views.room_check_in,
+        room_views.room_check_in,
         name="room_check_in"),
-    url(r"^batch_room_checkin/$", views.batch_checkin, name="batch_room_checkin"),
+    url(r"^batch_room_checkin/$", room_views.batch_checkin, name="batch_room_checkin"),
     url(r"^room/(\d+)/toggle_tag/(\w+)/$",
-        views.room_tag_toggle,
+        room_views.room_tag_toggle,
         name="room_tag_toggle"),
     
     url(r"^delete_room_tag/(\d+)/$",
-        views.delete_room_tag,
+        room_views.delete_room_tag,
         name="delete_room_tag"),
     
-    url(r"^batch_room_tag/$", views.batch_room_tag, name="batch_room_tag"),
-    url(r"^add_room_tag/$", views.add_room_tag, name="add_room_tag"),
-    url(r"^tag/(\d+)/$", views.view_tag, name="view_tag"),
+    url(r"^batch_room_tag/$", room_views.batch_room_tag, name="batch_room_tag"),
+    url(r"^add_room_tag/$", room_views.add_room_tag, name="add_room_tag"),
+    url(r"^tag/(\d+)/$", room_views.view_tag, name="view_tag"),
 
 
     # Scratch related
@@ -282,6 +277,6 @@ if settings.SILK_ENABLED:
         url(r"^silk/", include("silk.urls", namespace="silk"))
     ]
 
-handler403 = "mittab.apps.tab.views.render_403"
-handler404 = "mittab.apps.tab.views.render_404"
-handler500 = "mittab.apps.tab.views.render_500"
+handler403 = "mittab.apps.tab.views.views.render_403"
+handler404 = "mittab.apps.tab.views.views.render_404"
+handler500 = "mittab.apps.tab.views.views.render_500"

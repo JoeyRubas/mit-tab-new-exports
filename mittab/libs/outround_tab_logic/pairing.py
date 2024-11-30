@@ -12,7 +12,7 @@ from mittab.libs.tab_logic import (
 from mittab.libs import errors
 import mittab.libs.cache_logic as cache_logic
 
-from mittab.apps.tab.team_views import get_team_rankings
+from mittab.apps.tab.views.team_views import get_team_rankings
 
 
 def perform_the_break():
