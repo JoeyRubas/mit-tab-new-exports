@@ -31,6 +31,9 @@ class NotEnoughJudgesError(Exception):
 class NotEnoughRoomsError(Exception):
     pass
 
+class RoundZeroBackupError(Exception):
+    pass
+
 
 class BadBreak(Exception):
     pass
