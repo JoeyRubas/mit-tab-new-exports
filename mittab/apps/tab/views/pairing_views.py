@@ -109,11 +109,13 @@ def assign_judges_to_pairing(request):
 @permission_required("tab.tab_settings.can_change", login_url="/403/")
 def assign_rooms_to_pairing(request):
     current_round_number = TabSettings.objects.get(key="cur_round").value - 1
+    warnings = []
     if request.method == "POST":
         try:
             backup.backup_round("round_%s_before_room_assignment" %
                                 current_round_number)
-            assign_rooms.add_rooms()
+            warnings = assign_rooms.add_rooms()
+            request.session['room_warnings'] = warnings
         except Exception:
             emit_current_exception()
             return redirect_and_flash_error(request,
@@ -207,7 +209,7 @@ def view_round(request, round_number):
 
     tot_rounds = TabSettings.get("tot_rounds", 5)
 
-    round_pairing = tab_logic.sorted_pairings(round_number)
+    round_pairing = tab_logic.sorted_pairings(round_number, fetch_room_tags=True)
     # For the template since we can't pass in something nicer like a hash
     round_info = [pair for pair in round_pairing]
 
@@ -256,6 +258,7 @@ def view_round(request, round_number):
                 list(available_rooms)
             ]
         ]))
+    warnings = request.session.pop('room_warnings', None)
 
     return render(request, "pairing/pairing_control.html", locals())
 

@@ -1,3 +1,4 @@
+import copy
 import math
 import random
 from mittab.apps.tab.models import Room, RoomCheckIn, RoomTag, Round, TabSettings
@@ -8,39 +9,13 @@ from mittab.libs import tab_logic
 class Command(BaseCommand):
     help = "Assign room tags to all rooms"
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--num_tags',
-            type=int,
-            default=100,
-            help='Number of tags to create'
-        )
-        parser.add_argument(
-            '--tags_per_round',
-            type=int,
-            default=10,
-            help='Number of tags to assign per round'
-        )
-        parser.add_argument(
-            '--valid_rooms_per_round',
-            type=int,
-            default=2,
-            help='Number of valid rooms per round'
-        )
-        parser.add_argument(
-            '--randomize',
-            type = bool,
-            default = True,
-            help = 'Randomize the number of tags per round and valid rooms per round'
-        )
-
     def handle(self, *args, **kwargs):
         """
         Create tags and assign them efficiently
         """
-        self.num_tags = int(kwargs['num_tags'])
-        self.tags_per_round = int(kwargs['tags_per_round'])
-        self.valid_rooms_per_round = int(kwargs['valid_rooms_per_round'])
+        self.num_tags = 1000
+        self.tags_per_round = 10
+        self.valid_rooms_per_round = 3
         self.randomize = True
         self.make_tags()
         self.assign_tags()
@@ -73,8 +48,6 @@ class Command(BaseCommand):
         for pairing in rounds:
             print(f"Assigning tags to pairing {pairing}")
 
-            if self.randomize:
-                self.tags_per_round = min(self.num_tags, max(1, int(random.betavariate(2, 5) * self.num_tags)))
             random_tags = random.sample(all_tags, self.tags_per_round)
             #split random tags into three lists with random lengths who's union is random_tags
             idx1 = random.randint(0, len(random_tags)-2)
@@ -88,12 +61,12 @@ class Command(BaseCommand):
             pairing.chair.room_tags.add(*random_tags[idx2:])
             pairing.chair.save()
 
+            no_room = random.randint(0, 5)
             # Assign tags to valid rooms
-            if self.randomize:
-                self.valid_rooms_per_round = random.randint(1, max_rooms_per_round)
-            for _ in range(self.valid_rooms_per_round):
-                room = unused_rooms.pop()
-                if not unused_rooms:
-                    unused_rooms = list(all_rooms)
-                room.tags.add(*random_tags)
-                room.save()
+            if no_room:
+                for _ in range(self.valid_rooms_per_round):
+                    room = unused_rooms.pop()
+                    if not unused_rooms:
+                        unused_rooms = copy.deepcopy(all_rooms)
+                    room.tags.add(*random_tags)
+                    room.save()

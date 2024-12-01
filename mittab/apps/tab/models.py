@@ -550,7 +550,7 @@ class Round(models.Model):
         return required_tags
     
     def get_room_tag_warnings(self):
-        if not self.room:
+        if not self.room or not self.room.tags.exists():
             return None
         required_tags = self.get_required_tags()
         missing_tags = required_tags - set(self.room.tags.all())
