@@ -126,3 +126,5 @@ typings/
 .venv/
 
 out.txt
+
+PR_helper/html_reports/

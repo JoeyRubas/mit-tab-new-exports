@@ -92,7 +92,7 @@ def delete_scratch(request, item_id, scratch_id):
 
 def view_scratches(request):
     # Get a list of (id,school_name) tuples
-    c_scratches = [(s.team.pk, str(s), 0, "") for s in Scratch.objects.all()]
+    c_scratches = [(s.team.pk, str(s), 0, "") for s in Scratch.objects.prefetch_related("team")]
     return render(
         request, "common/list_data.html", {
             "item_type": "team",

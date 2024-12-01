@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+pre {
+    background: #f0f0f0;
+    margin: 0;
+    padding: 10px;
+    white-space: pre-wrap; /* Ensure long lines wrap properly */
+    line-height: 1.2; /* Adjust for tighter spacing */
+}
+
+.line {
+    display: flex;
+    align-items: baseline;
+    margin: 0; /* Remove any external spacing */
+}
+
+.line-number {
+    display: inline-block;
+    width: 200px; /* Adjust width as needed */
+    text-align: right; /* Align numbers to the right */
+    padding-right: 10px; /* Add spacing between numbers and content */
+    color: #555; /* Optional: Slightly dim the line numbers */
+}
+
+.line-content {
+    flex-grow: 1; /* Allow content to take up remaining space */
+    white-space: pre-wrap; /* Prevent content from overflowing */
+}
+
+.mine {
+    background: #dfffdf;
+}
+
+.other {
+    background: #ffdede;
+}

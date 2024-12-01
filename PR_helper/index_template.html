@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; cursor: pointer; }
+    </style>
+    <script>function sortTable(n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById('summaryTable');
+        switching = true;
+        dir = 'asc';
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName('TD')[n];
+                y = rows[i + 1].getElementsByTagName('TD')[n];
+                let xContent = x.innerHTML.trim();
+                let yContent = y.innerHTML.trim();
+    
+                // Check if the content is numeric
+                let xValue = isNaN(xContent) ? xContent.toLowerCase() : parseFloat(xContent);
+                let yValue = isNaN(yContent) ? yContent.toLowerCase() : parseFloat(yContent);
+    
+                if (dir == 'asc') {
+                    if (xValue > yValue) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir == 'desc') {
+                    if (xValue < yValue) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount++;
+            } else {
+                if (switchcount == 0 && dir == 'asc') {
+                    dir = 'desc';
+                    switching = true;
+                }
+            }
+        }
+    }
+        </script>
+</head>
+<body>
+    <h1>Index</h1>
+    <table id="summaryTable">
+        <tr>
+            <th onclick="sortTable(0)">File</th>
+            <th onclick="sortTable(1)">Total Lines</th>
+            <th onclick="sortTable(2)">New Lines</th>
+            <th onclick="sortTable(3)">Old Lines</th>
+        </tr>
+        <!-- Dynamic rows will be inserted here -->
+    </table>
+</body>
+</html>
