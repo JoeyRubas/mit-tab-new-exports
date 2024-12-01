@@ -291,7 +291,7 @@ def alternative_judges(request, round_id, judge_id=None):
 
     return render(request, "pairing/judge_dropdown.html", locals())
 
-def alternative_rooms(request, round_id, room_id):
+def alternative_rooms(request, round_id, room_id=""):
     # Fetch the round object and its required tags
     round_obj = Round.objects.select_related().get(id=int(round_id))
     round_number = round_obj.round_number

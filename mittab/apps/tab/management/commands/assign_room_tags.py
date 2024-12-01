@@ -13,10 +13,10 @@ class Command(BaseCommand):
         """
         Create tags and assign them efficiently
         """
-        self.num_tags = 1000
-        self.tags_per_round = 10
-        self.valid_rooms_per_round = 3
-        self.randomize = True
+        self.num_tags = 50
+        self.tags_per_round = 3
+        self.valid_rooms_per_round = 5
+        self.randomize = False
         self.make_tags()
         self.assign_tags()
 
@@ -42,8 +42,6 @@ class Command(BaseCommand):
         all_rooms = sorted((r.room for r in rooms), key=lambda r: r.rank, reverse=True)
         unused_rooms = list(all_rooms)
         all_tags = list(RoomTag.objects.all())
-        if self.randomize:
-            max_rooms_per_round = math.ceil(len(rooms)/4)
 
         for pairing in rounds:
             print(f"Assigning tags to pairing {pairing}")
@@ -69,4 +67,5 @@ class Command(BaseCommand):
                     if not unused_rooms:
                         unused_rooms = copy.deepcopy(all_rooms)
                     room.tags.add(*random_tags)
+                    print(room)
                     room.save()

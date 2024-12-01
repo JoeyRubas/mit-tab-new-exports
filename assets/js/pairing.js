@@ -4,27 +4,32 @@ import quickSearchInit from "./quickSearch";
 
 function populateTabCards() {
   const roundNumber = $("#round-number").data("round-number");
-  if (roundNumber){
+  if (roundNumber) {
     $.ajax({
       url: `/round/${roundNumber}/stats`,
       success(result) {
-        Object.entries(result).forEach(([teamId, stats]) => {
-          const tabCardElement = $(`.tabcard[team-id=${teamId}]`);
-          const text = [
-            stats.wins,
-            stats.total_speaks.toFixed(2),
-            stats.govs,
-            stats.opps,
-            stats.seed
-          ].join(" / ");
-          tabCardElement.attr("title", "Wins / Speaks / Govs / Opps / Seed");
-          tabCardElement.attr("href", `/team/card/${teamId}`);
-          tabCardElement.text(`${text}`);
+        $(".tabcard").each(function () {
+          const teamId = $(this).attr("team-id");
+          if (teamId && result[teamId]) {
+            const stats = result[teamId];
+            const text = [
+              stats.wins,
+              stats.total_speaks.toFixed(2),
+              stats.govs,
+              stats.opps,
+              stats.seed
+            ].join(" / ");
+            $(this)
+              .attr("title", "Wins / Speaks / Govs / Opps / Seed")
+              .attr("href", `/team/card/${teamId}`)
+              .text(`${text}`);
+          }
         });
       }
     });
   }
 }
+
 
 function assignTeam(e) {
   e.preventDefault();
