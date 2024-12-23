@@ -43,4 +43,15 @@
   </div>
 </div>
 {% endif %}
+
+
+{% if tag_obj %}
+  <form method="post" action="{% url 'delete_room_tag' tag_obj.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="tag_id" value="{{ tag_obj.pk }}">
+    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this item? This action cannot be undone.');">
+        Delete
+    </button>
+  </form>
+{% endif %}
 {% endblock %}

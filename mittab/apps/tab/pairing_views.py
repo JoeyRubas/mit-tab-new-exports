@@ -2,12 +2,12 @@ import random
 import time
 import datetime
 
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import permission_required
 from django.db import transaction
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Prefetch
 from django.shortcuts import redirect
 
 from mittab.apps.tab.helpers import redirect_and_flash_error, \
@@ -128,6 +128,7 @@ def assign_rooms_to_pairing(request):
 def alternative_rooms(request, round_id, room_id=""):
     round_obj = Round.objects.get(id=int(round_id))
     round_number = round_obj.round_number
+    required_tags = round_obj.get_required_tags()
 
     current_room_obj = None
     if room_id.isdigit():
@@ -139,11 +140,18 @@ def alternative_rooms(request, round_id, room_id=""):
     # Fetch all rooms checked in for the given round, ordered by rank
     # A little out of depth on the Django ORM here, but this seems like the
     # way to get this data with the least amount of queries
-    rooms = set(Room.objects.filter(
+    rooms = set(
+    Room.objects.filter(
         roomcheckin__round_number=round_number
-    ).annotate(
+    )
+    .annotate(
         has_round=Exists(Round.objects.filter(room_id=OuterRef('id')))
-    ).order_by("-rank"))
+    )
+    .prefetch_related(
+        Prefetch('tags', queryset=RoomTag.objects.only('tag'))
+    )
+    .order_by("-rank")
+    )
 
     
     
@@ -163,11 +171,11 @@ def alternative_rooms(request, round_id, room_id=""):
     slate of features.
     """
 
-    # For now all checked in rooms are "viable", but room tags will make having three categories nessicary
-    viable_rooms = rooms
     
-    viable_unpaired_rooms = filter(lambda room: not room.has_round, rooms)
-    viable_paired_rooms = filter(lambda room: room.has_round, rooms)
+    viable_rooms = set(filter(lambda room: required_tags.issubset(room.tags.all()), rooms))
+    
+    viable_unpaired_rooms = filter(lambda room: not room.has_round, viable_rooms)
+    viable_paired_rooms = filter(lambda room: room.has_round, viable_rooms)
     other_rooms = rooms - viable_rooms
 
     # Render the response
@@ -178,6 +186,11 @@ def alternative_rooms(request, round_id, room_id=""):
         "viable_paired_rooms": viable_paired_rooms,
         "other_rooms": other_rooms,
     })
+    
+def room_tag_warnings(request, round_id):
+    rount_id = int(round_id)
+    pairing = get_object_or_404(Round, id=round_id)
+    return JsonResponse({'room_tag_warnings': pairing.get_room_tag_warnings()})
     
 @permission_required("tab.tab_settings.can_change", login_url="/403/")
 def assign_room(request, round_id, room_id, remove_id=None):
@@ -287,7 +300,7 @@ def view_round(request, round_number):
 
     tot_rounds = TabSettings.get("tot_rounds", 5)
 
-    round_pairing = tab_logic.sorted_pairings(round_number)
+    round_pairing = tab_logic.sorted_pairings(round_number, fetch_room_tags=True)
     # For the template since we can't pass in something nicer like a hash
     round_info = [pair for pair in round_pairing]
 
@@ -337,6 +350,7 @@ def view_round(request, round_number):
                 list(available_rooms)
             ]
         ]))
+    warnings = request.session.pop('room_warnings', None)
 
     return render(request, "pairing/pairing_control.html", locals())
 

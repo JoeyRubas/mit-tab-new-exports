@@ -48,6 +48,7 @@ function assignTeam(e) {
         $container.find(".tabcard").attr("team-id", result.team.id);
 
         populateTabCards();
+        refreshRoomWarning(roundId);
       } else {
         window.alert(alertMsg);
       }
@@ -155,6 +156,7 @@ function assignJudge(e) {
       $(`.judges span[round-id=${roundId}] .judge-toggle`).removeClass("chair");
       $(`.judges span[round-id=${roundId}][judge-id=${result.chair_id}]
         .judge-toggle`).addClass("chair");
+        refreshRoomWarning(roundId);
     }
   });
 }
@@ -211,6 +213,35 @@ function togglePairingRelease(event) {
         $("#close-pairings").addClass("d-none");
         $("#release-pairings").removeClass("d-none");
       }
+    }
+  });
+}
+
+function refreshRoomWarning(roundId) {
+  $.ajax({
+    url: `/pairings/room_tag_warnings/${roundId}`,
+    success(result) {
+      const warningParent = $(`.warning-parent[round-id=${roundId}]`);
+      const warningElement = $(`.room-warning[round-id=${roundId}]`);
+      if (result.room_tag_warnings) {
+        if (warningElement.length) {
+          console.log("Updating warning");
+          warningElement.text(result.room_tag_warnings);
+        } else {
+          console.log("Adding warning:" + result.room_tag_warnings);
+          warningParent.append(
+            `<div class="alert alert-danger text-center room-warning" round-id="${roundId}" role="alert" style="font-size: 1.5em;">
+              ${result.room_tag_warnings}
+            </div>`
+          );
+        }
+      } else {
+        console.log("Removing warning");
+        warningElement.remove();
+      }
+    },
+    failure() {
+      console.error("Failed to refresh room warning");
     }
   });
 }

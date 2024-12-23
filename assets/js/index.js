@@ -14,6 +14,7 @@ import roomCheckinInit from "./roomBatchCheckin";
 import filtersInit from "./filters";
 import quickSearchInit from "./quickSearch";
 import multiselectInit from "./multiselect";
+import roomBatchTagInit from "./roomBatchTag";
 
 function initializeConfirms() {
   $("[confirm]").click(e => {
@@ -50,7 +51,7 @@ $(document).ready(() => {
   quickSearchInit();
   multiselectInit();
   bsCustomFileInput.init();
-
+  roomBatchTagInit();
   initializeConfirms();
   initializeRevealButtons();
   loadTabCards();

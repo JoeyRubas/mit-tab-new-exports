@@ -1,3 +1,4 @@
+from collections import Counter
 import random
 
 from haikunator import Haikunator
@@ -169,6 +170,7 @@ class Team(models.Model):
     break_preference = models.IntegerField(default=0,
                                            choices=BREAK_PREFERENCE_CHOICES)
     tiebreaker = models.IntegerField(unique=True, null=True, blank=True)
+    room_tags = models.ManyToManyField("RoomTag", blank=True)
 
     """
     Consolidate the knowledge of what relations need
@@ -301,7 +303,7 @@ class Judge(models.Model):
                                    blank=True,
                                    null=True,
                                    unique=True)
-
+    room_tags = models.ManyToManyField("RoomTag", blank=True)
     def set_unique_ballot_code(self):
         haikunator = Haikunator()
         code = haikunator.haikunate(token_length=0)
@@ -367,7 +369,8 @@ class Scratch(models.Model):
 class Room(models.Model):
     name = models.CharField(max_length=30, unique=True)
     rank = models.DecimalField(max_digits=4, decimal_places=2)
-
+    tags = models.ManyToManyField("RoomTag", blank=True)
+    
     def __str__(self):
         return self.name
 
@@ -382,23 +385,16 @@ class Room(models.Model):
     def is_checked_in_for_round(self, round_number):
         return RoomCheckIn.objects.filter(room=self,
                                           round_number=round_number).exists()
-    
+
+    def is_tagged_with(self, tag_id):
+        return self.tags.filter(pk=tag_id).exists()
+
     def get_color(self):
-        """Colors are inherited from the highest priority room tag
-        
-        Not sure if the typical approach would be method or property
-        but since room color can change both from changes to any room tag,
-        or changes to which tags are associated with this room
-        this seemed like it would probably be the lighter weight approach,
-        especically because I expect num_room_tags <<<<<< num_rooms in virtually every case    
-        """
-        
-        #Since this is not implimented yet, we just return none, with a 
-        #commented out test line for using random colors to see how they're displayed
-        
-        #TODO: Comment out before merge
-        return "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
-        #return None
+        # Leaving this for now, but may have to change to inline sort
+        highest_priority_tag = self.tags.order_by('-priority').first()
+        if highest_priority_tag:
+            return highest_priority_tag.color
+        return None
 
     class Meta:
         ordering = ["name"]
@@ -547,6 +543,24 @@ class Round(models.Model):
         for round_obj in rounds:
             round_obj.delete()
         super(Round, self).delete(using, keep_parents)
+        
+    def get_required_tags(self):
+        required_tags = set()
+        required_tags.update(self.gov_team.room_tags.all())
+        required_tags.update(self.opp_team.room_tags.all())
+        for judge in self.judges.all():
+            required_tags.update(judge.room_tags.all())
+        return required_tags
+
+    def get_room_tag_warnings(self):
+        if not self.room or not self.room.tags.exists():
+            return None
+        required_tags = self.get_required_tags()
+        missing_tags = required_tags - set(self.room.tags.all())
+        if missing_tags:
+            return "Warning: Unmet room tags: %s" % ", ".join(tag.tag for tag in missing_tags)
+        else:
+            return None
 
 
 class Bye(models.Model):
@@ -602,3 +616,38 @@ class RoomCheckIn(models.Model):
     def __str__(self):
         return "Room %s is checked in for round %s" % (self.room,
                                                        self.round_number)
+        
+DEFAULT_COLORS = [
+    "#f8d7da",  
+    "#cce5ff",  
+    "#d6d8db",  
+    "#d4edda",  
+    "#ffeeba",  
+]
+
+class RoomTag(models.Model):
+    tag = models.CharField(max_length=255)
+    priority = models.DecimalField(max_digits=4, decimal_places=2)
+    color = models.CharField(max_length=7, default="#000000")
+
+
+    def save(self, *args, **kwargs):
+        """This could realistically probably be replaced by just randomly 
+        selecting a color, but haven't seen any noticable performace hit
+        even in huge 1000+ tag test scenarios which are far far beyond anything realistic."""
+        if not self.color or self.color == "#000000":
+            used_colors = RoomTag.objects.values_list('color', flat=True)
+            available_colors = set(DEFAULT_COLORS) - set(used_colors)
+
+            # If there are any colors completely unused, pick the first one
+            if available_colors:
+                self.color = available_colors.pop()
+            else:
+                # Otherwise, pick the least used color
+                cts = Counter(used_colors)
+                self.color = min(cts, key=cts.get)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.tag

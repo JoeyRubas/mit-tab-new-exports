@@ -11,6 +11,7 @@ from mittab.apps.tab.models import *
 from mittab.libs import errors, cache_logic
 from mittab import settings
 
+from .models import RoomTag, Team, Judge
 
 class UploadBackupForm(forms.Form):
     file = forms.FileField(label="Your Backup File")
@@ -659,3 +660,47 @@ class OutroundResultEntryForm(forms.Form):
                 breaking_team.save()
 
         return round_obj
+
+
+
+class RoomTagForm(forms.ModelForm):
+    # Add fields to handle many-to-many relationships
+    teams = forms.ModelMultipleChoiceField(
+        queryset=Team.objects.all(),
+        required=False,
+    )
+    judges = forms.ModelMultipleChoiceField(
+        queryset=Judge.objects.all(),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(RoomTagForm, self).__init__(*args, **kwargs)
+
+        # Populate initial values for many-to-many relationships
+        if 'instance' in kwargs:
+            instance = kwargs['instance']
+            self.fields['teams'].initial = instance.team_set.all()
+            self.fields['judges'].initial = instance.judge_set.all()
+
+    def save(self, commit=True):
+        # Save the RoomTag instance first
+        room_tag = super(RoomTagForm, self).save(commit=False)
+
+        if commit:
+            room_tag.save()
+            # Update many-to-many relationships
+            self.save_m2m()
+
+        # After the instance is saved, handle many-to-many relationships
+        if room_tag.pk:
+            room_tag.team_set.set(self.cleaned_data['teams'])
+            room_tag.judge_set.set(self.cleaned_data['judges'])   
+        return room_tag
+
+    class Meta:
+        model = RoomTag
+        fields = ("tag", "priority", "color")  # Include only necessary fields
+        widgets = {
+            'color': forms.TextInput(attrs={'type': 'color', 'class': 'color-picker'}),  # Render as color input
+        }

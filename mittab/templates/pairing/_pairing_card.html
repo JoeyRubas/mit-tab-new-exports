@@ -1,5 +1,20 @@
 <div class="card bg-light pairing-card mb-3">
   <div class="card-body container-fluid">
+    <div class ="warning-parent" round-id={{pairing.id}}>
+      {% if warnings %}
+  
+
+  
+  
+      {% else %}
+        {% if pairing.get_room_tag_warnings %}
+        <div class="alert alert-danger text-center room-warning" round-id={{pairing.id}} role="alert" style="font-size: 1.5em;">
+          {{ pairing.get_room_tag_warnings }}
+        </div>
+      {% endif %}
+  
+      {% endif %}
+    </div>
     <div class="row" round-id="{{pairing.id}}">
 
       <div class="col-5">
