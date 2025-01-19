@@ -134,8 +134,6 @@ pyenv local 3.7.13
 ### Set Up Virtual Environment
 
 ```bash
-python -m venv venv
-source venv/bin/activate
 pip install pipenv
 pipenv install --python 3.7
 ```
