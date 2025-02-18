@@ -6,7 +6,7 @@ from django.shortcuts import render, reverse, get_object_or_404
 import yaml
 
 from mittab.apps.tab.archive import ArchiveExporter
-from mittab.apps.tab.forms import SchoolForm, RoomForm, UploadDataForm, ScratchForm, \
+from mittab.apps.tab.forms import RoomTagForm, SchoolForm, RoomForm, UploadDataForm, ScratchForm, \
     SettingsForm
 from mittab.apps.tab.helpers import redirect_and_flash_error, \
     redirect_and_flash_success
@@ -215,6 +215,96 @@ def view_room(request, room_id):
         "title": "Viewing Room: %s" % (room.name)
     })
 
+def view_tag(request, tag_id):
+    tag_id = int(tag_id)
+    try:
+        tag = RoomTag.objects.get(pk=tag_id)
+    except RoomTag.DoesNotExist:
+        return redirect_and_flash_error(request, "Tag not found")
+    if request.method == "POST":
+        form = RoomTagForm(request.POST, instance=tag)
+        if form.is_valid():
+            try:
+                form.save()
+            except ValueError as e:
+                print(e)
+                return redirect_and_flash_error(
+                    request,
+                    "Tag name cannot be validated, most likely a non-existent tag"
+                )
+            return redirect_and_flash_success(
+                request, "Tag {} updated successfully".format(
+                    form.cleaned_data["tag"]),
+                path=reverse("view_tag", args=[tag_id]))
+    else:
+        form = RoomTagForm(instance=tag)
+    return render(request, "common/data_entry.html", {
+        "form": form,
+        "links": [],
+        "tag_obj": tag,
+        "title": "Viewing Tag: %s" % (tag.tag)
+    })
+
+def delete_room_tag(request, tag_id):
+    if request.method == "POST":
+        tag_id = request.POST.get("tag_id")
+        try:
+            rounds = list(Round.objects.filter(room_tags__id=tag_id))
+            tag = RoomTag.objects.get(pk=tag_id)
+            tag.delete()
+            for roundobj in rounds:
+                print(roundobj.judges.all())
+                roundobj.save()
+            return redirect_and_flash_success(request, "Tag deleted successfully", path=reverse("batch_room_tag"))
+        except RoomTag.DoesNotExist:
+            return redirect_and_flash_error(request, "Tag not found")
+    return redirect_and_flash_error(request, "Invalid request")
+
+
+@permission_required("tab.tab_settings.can_change", login_url="/403")
+def room_tag_toggle(request, room_id, tag_id):
+    room_id, tag_id  = int(room_id), int(tag_id)
+    room = get_object_or_404(Room, pk=room_id)
+    tag = get_object_or_404(RoomTag, pk=tag_id)
+    if not room.is_tagged_with(tag_id):
+        room.tags.add(tag)
+        room.save()
+    elif room.is_tagged_with(tag_id):
+        room.tags.remove(tag)
+        room.save()
+    return JsonResponse({"success": True})
+
+def add_room_tag(request):
+    if request.method == "POST":
+        tag = request.POST.get("tag")
+        priority = request.POST.get("priority")
+
+        if not tag or not priority:
+            return redirect_and_flash_error(request, "Tag and priority are required fields")
+
+        try:
+            priority = int(priority)
+            if priority < 0 or priority > 99:
+                raise ValueError("Priority must be between 0 and 99")
+        except ValueError as e:
+            return redirect_and_flash_error(request, str(e))
+
+        RoomTag.objects.create(tag=tag, priority=priority)
+        return redirect_and_flash_success(request, "Room tag added successfully")
+
+def batch_room_tag(request):
+    rooms_and_tags = []
+    tags = list(RoomTag.objects.order_by("-priority"))
+    tag_count = len(tags)   
+    for room in Room.objects.prefetch_related("tags").all():
+        row = (room, [[tag, False] for tag in tags])
+        for tag in room.tags.all():
+            row[1][tags.index(tag)][1] = True
+        rooms_and_tags.append(row)  
+    return render(request, "tab/room_batch_tag.html", {
+        "rooms_and_tags": rooms_and_tags,
+        "tags": tags
+    })
 
 def enter_room(request):
     if request.method == "POST":

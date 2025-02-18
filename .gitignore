@@ -125,3 +125,6 @@ typings/
 .venv/
 .vscode/
 *chrome-stable*
+htmlcov/
+.vscode/
+google-chrome-*.deb

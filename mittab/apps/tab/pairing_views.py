@@ -2,18 +2,21 @@ import random
 import time
 import datetime
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import permission_required
 from django.db import transaction
+from django.db.models import Exists, OuterRef
 from django.shortcuts import redirect
 
 from mittab.apps.tab.helpers import redirect_and_flash_error, \
     redirect_and_flash_success
 from mittab.apps.tab.models import *
+from mittab.libs import assign_rooms
 from mittab.libs.errors import *
-from mittab.apps.tab.forms import ResultEntryForm, UploadBackupForm, score_panel, \
+from mittab.apps.tab.forms import ResultEntryForm, RoomTagForm, UploadBackupForm, score_panel, \
     validate_panel, EBallotForm
 import mittab.libs.cache_logic as cache_logic
 import mittab.libs.tab_logic as tab_logic
@@ -107,6 +110,87 @@ def assign_judges_to_pairing(request):
 
 
 @permission_required("tab.tab_settings.can_change", login_url="/403/")
+def assign_rooms_to_pairing(request):
+    current_round_number = TabSettings.objects.get(key="cur_round").value - 1
+    if request.method == "POST":
+        try:
+            backup.backup_round("round_%s_before_room_assignment" %
+                                current_round_number)
+            assign_rooms.add_rooms()
+        except Exception:
+            emit_current_exception()
+            return redirect_and_flash_error(request,
+                                            "Got error during room assignment")
+    return redirect("/pairings/status/")
+
+
+def alternative_rooms(request, round_id, room_id=""):
+    # Fetch the round object and its required tags
+    round_obj = Round.objects.select_related().get(id=int(round_id))
+    round_number = round_obj.round_number
+    required_tags = set(round_obj.get_required_tags())
+
+    # Get the current room if valid
+    current_room_obj = None
+    if room_id.isdigit():
+        try:
+            current_room_obj = Room.objects.get(id=int(room_id))
+        except Room.DoesNotExist:
+            pass
+
+    # Fetch all rooms checked in for the given round, ordered by rank
+    checked_in_rooms = Room.objects.filter(
+        roomcheckin__round_number=round_number
+    ).prefetch_related("tags").order_by("-rank")
+
+    # Categorize rooms
+    tags_met = [room for room in checked_in_rooms if required_tags.issubset(set(room.tags.all()))]
+    paired_rooms_ids = set(
+        Round.objects.filter(round_number=round_number, room__in=tags_met).values_list("room_id", flat=True)
+    )
+    viable_rooms = [room for room in tags_met if room.id not in paired_rooms_ids]
+    viable_paired_rooms = [room for room in tags_met if room.id in paired_rooms_ids]
+    other_rooms = [room for room in checked_in_rooms if room not in tags_met]
+
+    # Render the response
+    return render(request, "pairing/room_dropdown.html", {
+        "current_room": current_room_obj,
+        "round_obj": round_obj,
+        "viable_rooms": viable_rooms,
+        "viable_paired_rooms": viable_paired_rooms,
+        "other_rooms": other_rooms,
+    })
+
+def room_tag_warnings(request, round_id):
+    rount_id = int(round_id)
+    pairing = get_object_or_404(Round, id=round_id)
+    return JsonResponse({'room_tag_warnings': pairing.get_room_tag_warnings()})
+
+
+@permission_required("tab.tab_settings.can_change", login_url="/403/")
+def assign_room(request, round_id, room_id, remove_id=None):
+    try:
+        round_obj = Round.objects.get(id=int(round_id))
+        if remove_id is not None and round_obj.room.id != remove_id:
+            round_obj.room = None
+        room_obj = Room.objects.get(id=int(room_id))
+        round_obj.room = room_obj
+        round_obj.save()
+        room_color = room_obj.get_color()
+        data = {
+            "success": True,
+            "room_color": room_color if room_color else "",
+            "room_id": room_obj.id,
+            "round_id": round_obj.id,
+            "room_name": room_obj.name,
+        }
+    except Exception:
+        emit_current_exception()
+        data = {"success": False}
+    return JsonResponse(data)
+
+
+@permission_required("tab.tab_settings.can_change", login_url="/403/")
 def view_backup(request, filename):
     backups = backup.list_backups()
     item_list = []
@@ -191,7 +275,7 @@ def view_round(request, round_number):
 
     tot_rounds = TabSettings.get("tot_rounds", 5)
 
-    round_pairing = tab_logic.sorted_pairings(round_number)
+    round_pairing = tab_logic.sorted_pairings(round_number, fetch_room_tags=True)
     # For the template since we can't pass in something nicer like a hash
     round_info = [pair for pair in round_pairing]
 
@@ -211,6 +295,7 @@ def view_round(request, round_number):
     pairing_exists = len(round_pairing) > 0
     pairing_released = TabSettings.get("pairing_released", 0) == 1
     judges_assigned = all((r.judges.count() > 0 for r in round_info))
+    rooms_assigned = all((r.room is not None for r in round_info))
     excluded_judges = Judge.objects.exclude(
         judges__round_number=round_number).filter(
             checkin__round_number=round_number)
@@ -308,9 +393,11 @@ def team_stats(request, round_number):
 
     for round_obj in pairings:
         if round_obj.gov_team:
-            stats_by_team_id[round_obj.gov_team_id] = stats_for_team(round_obj.gov_team)
+            stats_by_team_id[round_obj.gov_team_id] = stats_for_team(
+                round_obj.gov_team)
         if round_obj.opp_team:
-            stats_by_team_id[round_obj.opp_team_id] = stats_for_team(round_obj.opp_team)
+            stats_by_team_id[round_obj.opp_team_id] = stats_for_team(
+                round_obj.opp_team)
 
     return JsonResponse(stats_by_team_id)
 
@@ -472,8 +559,8 @@ def enter_e_ballot(request, ballot_code):
         "judges",
     ).first()
     # see above, judge.judges is rounds
-    rounds = list(judge.judges.prefetch_related("chair") \
-            .filter(round_number=current_round).all())
+    rounds = list(judge.judges.prefetch_related("chair")
+                  .filter(round_number=current_round).all())
 
     if not judge:
         message = """
@@ -655,3 +742,4 @@ def delete_obj(obj_type):
     objs = obj_type.objects.all()
     for obj in objs:
         obj_type.delete(obj)
+

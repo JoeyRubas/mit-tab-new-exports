@@ -138,7 +138,11 @@ urlpatterns = [
     path("pairing/assign_judges/",
         pairing_views.assign_judges_to_pairing,
         name="assign_judges"),
-    path("pairing/confirm_start_tourny/",
+    
+    path("round/<int:round_id>/assign_room/<int:room_id>/", pairing_views.assign_room, name="assign_room"),
+    path("round/<int:round_id>/assign_room/<int:room_id>/<int:swap_id>/", pairing_views.assign_room, name="swap_judge"),
+    path("pairing/assign_rooms_to_pairing/", pairing_views.assign_rooms_to_pairing, name="assign_rooms_to_pairing"),
+    path("pairing/confirm_start_tourny/",    
         pairing_views.confirm_start_new_tourny,
         name="confirm_start_tourny"),
     path("pairing/start_tourny/",
@@ -159,6 +163,9 @@ urlpatterns = [
     path("pairing/release/",
         pairing_views.toggle_pairing_released,
         name="toggle_pairing_released"),
+    path("room/<int:room_id>/toggle_tag/<int:tag_id>/", 
+         views.room_tag_toggle, name="room_tag_toggle"),
+
     path("pairing/view_backups/",
         pairing_views.view_backups,
         name="view_backups"),
@@ -167,6 +174,8 @@ urlpatterns = [
     re_path(r"e_ballots/(\S+)/$",
         pairing_views.enter_e_ballot,
         name="enter_e_ballot"),
+    path("round/<int:round_id>/alternative_rooms/", pairing_views.alternative_rooms, name="alternative_rooms"),
+    path("round/<int:round_id>/alternative_rooms/<int:room_id>/", pairing_views.alternative_rooms, name="alternative_rooms"),
 
     # Outround related
     re_path(r"break/",
@@ -211,6 +220,7 @@ urlpatterns = [
     path("outround_pairing/release/<int:num_teams>/<int:type_of_round>/",
          outround_pairing_views.toggle_pairing_released,
          name="toggle_outround_pairing_released"),
+    
     path("outround_result/<int:type_of_round>",
          outround_pairing_views.forum_view,
          name="forum_view"),
@@ -242,6 +252,11 @@ urlpatterns = [
 
     # Cache related
     re_path(r"^cache_refresh", views.force_cache_refresh, name="cache_refresh"),
+
+    path("batch_room_tag/", views.batch_room_tag, name="batch_room_tag"),
+    path("add_room_tag/", views.add_room_tag, name="add_room_tag"),
+    path("delete_room_tag/<int:tag_id>", views.delete_room_tag, name="delete_room_tag"),
+    path("tag/<int:tag_id>/", views.view_tag, name="view_tag"),
 ]
 
 if settings.SILK_ENABLED:

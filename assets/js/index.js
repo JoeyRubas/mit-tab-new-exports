@@ -11,6 +11,7 @@ import checkinInit from "./batchCheckin";
 import roomCheckinInit from "./roomBatchCheckin";
 import filtersInit from "./filters";
 import quickSearchInit from "./quickSearch";
+import roomBatchTagInit from "./roomBatchTag";
 
 function initializeConfirms() {
   $("[confirm]").click(e => {
@@ -45,6 +46,7 @@ $(document).ready(() => {
   roomCheckinInit();
   filtersInit();
   quickSearchInit();
+  roomBatchTagInit();
   bsCustomFileInput.init();
 
   initializeConfirms();

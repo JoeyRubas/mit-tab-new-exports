@@ -92,3 +92,34 @@ $font-size-base: 0.95rem !default;
 .form-inline .input-group {
   width: 100%;
 }
+
+.color-picker {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 20%;
+  padding: 2px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &::-webkit-color-swatch {
+    border-radius: 10%;
+    border: none;
+  }
+
+  &::-moz-color-swatch {
+    border-radius: 10%;
+    border: none;
+  }
+
+  &:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.75);
+  }
+}

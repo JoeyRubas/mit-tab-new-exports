@@ -1,4 +1,5 @@
 import random
+from typing import Counter
 
 from haikunator import Haikunator
 from django.db import models
@@ -56,7 +57,8 @@ class TabSettings(models.Model):
              update_fields=None):
         cache_logic.invalidate_cache("tab_settings_%s" % self.key,
                                      cache_logic.PERSISTENT)
-        super(TabSettings, self).save(force_insert, force_update, using, update_fields)
+        super(TabSettings, self).save(force_insert,
+                                      force_update, using, update_fields)
 
 
 class School(models.Model):
@@ -106,7 +108,8 @@ class Debater(models.Model):
         while not self.tiebreaker or \
                 Debater.objects.filter(tiebreaker=self.tiebreaker).exists():
             self.tiebreaker = random.choice(range(0, 2**16))
-        super(Debater, self).save(force_insert, force_update, using, update_fields)
+        super(Debater, self).save(force_insert,
+                                  force_update, using, update_fields)
 
     @property
     def num_teams(self):
@@ -165,6 +168,7 @@ class Team(models.Model):
         (VARSITY, "Varsity"),
         (NOVICE, "Novice")
     )
+    room_tags = models.ManyToManyField("RoomTag", blank=True)
 
     break_preference = models.IntegerField(default=0,
                                            choices=BREAK_PREFERENCE_CHOICES)
@@ -206,7 +210,8 @@ class Team(models.Model):
         haikunator = Haikunator()
 
         def gen_haiku_and_clean():
-            code = haikunator.haikunate(token_length=0).replace("-", " ").title()
+            code = haikunator.haikunate(
+                token_length=0).replace("-", " ").title()
 
             return code
 
@@ -230,7 +235,8 @@ class Team(models.Model):
                 Team.objects.filter(tiebreaker=self.tiebreaker).exists():
             self.tiebreaker = random.choice(range(0, 2**16))
 
-        super(Team, self).save(force_insert, force_update, using, update_fields)
+        super(Team, self).save(force_insert,
+                               force_update, using, update_fields)
 
     @property
     def display_backend(self):
@@ -301,6 +307,7 @@ class Judge(models.Model):
                                    blank=True,
                                    null=True,
                                    unique=True)
+    room_tags = models.ManyToManyField("RoomTag", blank=True)
 
     def set_unique_ballot_code(self):
         haikunator = Haikunator()
@@ -345,8 +352,10 @@ class Judge(models.Model):
 
 
 class Scratch(models.Model):
-    judge = models.ForeignKey(Judge, related_name="scratches", on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, related_name="scratches", on_delete=models.CASCADE)
+    judge = models.ForeignKey(
+        Judge, related_name="scratches", on_delete=models.CASCADE)
+    team = models.ForeignKey(
+        Team, related_name="scratches", on_delete=models.CASCADE)
     TEAM_SCRATCH = 0
     TAB_SCRATCH = 1
     TYPE_CHOICES = (
@@ -367,6 +376,7 @@ class Scratch(models.Model):
 class Room(models.Model):
     name = models.CharField(max_length=30, unique=True)
     rank = models.DecimalField(max_digits=4, decimal_places=2)
+    tags = models.ManyToManyField("RoomTag", blank=True)
 
     def __str__(self):
         return self.name
@@ -382,6 +392,15 @@ class Room(models.Model):
     def is_checked_in_for_round(self, round_number):
         return RoomCheckIn.objects.filter(room=self,
                                           round_number=round_number).exists()
+
+    def is_tagged_with(self, tag_id):
+        return self.tags.filter(pk=tag_id).exists()
+
+    def get_color(self):
+        highest_priority_tag = self.tags.order_by('-priority').first()
+        if highest_priority_tag:
+            return highest_priority_tag.color
+        return None  
 
     class Meta:
         ordering = ["name"]
@@ -407,7 +426,8 @@ class Outround(models.Model):
                               blank=True,
                               on_delete=models.CASCADE,
                               related_name="chair_outround")
-    judges = models.ManyToManyField(Judge, blank=True, related_name="judges_outrounds")
+    judges = models.ManyToManyField(
+        Judge, blank=True, related_name="judges_outrounds")
     UNKNOWN = 0
     GOV = 1
     OPP = 2
@@ -497,7 +517,9 @@ class Round(models.Model):
         (ALL_DROP, "ALL DROP"),
         (ALL_WIN, "ALL WIN"),
     )
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    # Rooms are set to null before "pair rooms" button is clicked
+    room = models.ForeignKey(
+        Room, on_delete=models.CASCADE, blank=True, null=True)
     victor = models.IntegerField(choices=VICTOR_CHOICES, default=0)
 
     def clean(self):
@@ -529,10 +551,30 @@ class Round(models.Model):
         for round_obj in rounds:
             round_obj.delete()
         super(Round, self).delete(using, keep_parents)
+    
+    def get_required_tags(self):
+        required_tags = set()
+        required_tags.update(self.gov_team.room_tags.all())
+        required_tags.update(self.opp_team.room_tags.all())
+        for judge in self.judges.all():
+            required_tags.update(judge.room_tags.all())
+        return required_tags
+
+    def get_room_tag_warnings(self):
+        if not self.room:
+            return None
+        required_tags = self.get_required_tags()
+        missing_tags = required_tags - set(self.room.tags.all())
+        if missing_tags:
+            return "Warning: Unmet room tags: %s" % ", ".join(tag.tag for tag in missing_tags)
+        else:
+            return None
+
 
 
 class Bye(models.Model):
-    bye_team = models.ForeignKey(Team, related_name="byes", on_delete=models.CASCADE)
+    bye_team = models.ForeignKey(
+        Team, related_name="byes", on_delete=models.CASCADE)
     round_number = models.IntegerField()
 
     def __str__(self):
@@ -584,3 +626,34 @@ class RoomCheckIn(models.Model):
     def __str__(self):
         return "Room %s is checked in for round %s" % (self.room,
                                                        self.round_number)
+
+class RoomTag(models.Model):
+    tag = models.CharField(max_length=255)
+    priority = models.DecimalField(max_digits=4, decimal_places=2)
+    color = models.CharField(max_length=7, default="#000000")
+
+    DEFAULT_COLORS = [
+        "#f8d7da",  
+        "#cce5ff",  
+        "#d6d8db", 
+        "#d4edda",  
+        "#ffeeba",  
+    ]
+
+
+    def save(self, *args, **kwargs):
+        if not self.color or self.color == "#000000":
+            used_colors = RoomTag.objects.values_list('color', flat=True)
+            available_colors = set(self.DEFAULT_COLORS) - set(used_colors)
+
+            if available_colors:
+                self.color = available_colors.pop()  # Assign the first unused color
+            else:
+                # Select the color with the least uses
+                cts = Counter(used_colors)
+                self.color = min(cts, key=cts.get)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.tag
