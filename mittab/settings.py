@@ -1,5 +1,7 @@
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Quick-start development settings - unsuitable for production
@@ -18,8 +20,8 @@ ALLOWED_HOSTS = ["*"]
 INSTALLED_APPS = ("django.contrib.admin", "django.contrib.auth",
                   "django.contrib.contenttypes", "django.contrib.sessions",
                   "django.contrib.messages", "django.contrib.staticfiles",
-                  "mittab.apps.tab", "raven.contrib.django.raven_compat",
-                  "webpack_loader", "bootstrap4",)
+                  "mittab.apps.tab", "sentry_sdk.integrations.django",
+                  "webpack_loader", "bootstrap4")
 
 MIDDLEWARE = (
     "mittab.apps.tab.middleware.FailoverDuringBackup",
@@ -67,7 +69,12 @@ BACKUPS = {
 # Error monitoring
 # https://docs.sentry.io/clients/python/integrations/django/
 if os.environ.get("SENTRY_DSN"):
-    RAVEN_CONFIG = {"dsn": os.environ["SENTRY_DSN"]}
+    sentry_sdk.init(
+        dsn=os.environ["SENTRY_DSN"],
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=1.0,  # Adjust as needed
+        send_default_pii=True  # Include personal identifiable information
+    )
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -78,7 +85,6 @@ TIME_ZONE = "UTC"
 
 USE_I18N = True
 
-USE_L10N = True
 
 USE_TZ = True
 
@@ -89,7 +95,7 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "assets"), )
 
 WEBPACK_LOADER = {
     "DEFAULT": {
-        "BUNDLE_DIR_NAME": "webpack_bundles/",
+        "BUNDLE_DIR_NAME": "static/webpack_bundles/",
         "STATS_FILE": os.path.join(BASE_DIR, "webpack-stats.json"),
     }
 }
@@ -117,6 +123,7 @@ TEMPLATES = [
 ]
 
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SETTING_YAML_PATH = os.path.join(BASE_DIR, "settings.yaml")
 

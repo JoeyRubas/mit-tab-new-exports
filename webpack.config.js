@@ -4,21 +4,25 @@ const BundleTracker = require("webpack-bundle-tracker");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = {
+  mode: "production",
   context: __dirname,
   entry: {
     main: "./assets/js/index",
     pairingDisplay: "./assets/js/pairingDisplay",
     publicDisplay: "./assets/js/publicDisplay",
+    selectionForm: "./assets/js/multiselect",
   },
   optimization: {
     minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
+    
   },
   output: {
     path: path.resolve("./assets/webpack_bundles/"),
     publicPath: "/static/webpack_bundles/",
-    filename: "[name]-[hash].js",
+    filename: "[name]-[fullhash].js",
   },
   module: {
     rules: [
@@ -57,13 +61,14 @@ module.exports = {
   },
   resolve: {
     alias: {
-      jquery: "jquery/src/jquery",
+      jquery: require.resolve("jquery"),
     },
     extensions: [".js", ".scss", ".css"],
   },
 
   plugins: [
-    new BundleTracker({ filename: "./webpack-stats.json" }),
+    new BundleTracker({ path: path.resolve(__dirname), filename: "webpack-stats.json" }),
+    // new BundleAnalyzerPlugin(),
     new MiniCssExtractPlugin({
       filename: "[name].css",
       chunkFilename: "[id].css",
@@ -73,7 +78,10 @@ module.exports = {
       $: "jquery",
       jQuery: "jquery",
       "window.jQuery": "jquery",
-      Tether: "tether",
     }),
   ],
+  externals: {
+    jquery: "jQuery",
+    Bootstrap: "Bootstrap",
+  },
 };

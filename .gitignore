@@ -125,9 +125,14 @@ typings/
 
 *.dump.sql
 
+
 #webdriver
 google-chrome-stable_current_amd64.deb
 /chromedriver-linux64/
 
 #vscode
 .vscode/
+
+.venv/
+.vscode/
+*chrome-stable*
