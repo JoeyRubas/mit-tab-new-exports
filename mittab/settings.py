@@ -154,3 +154,7 @@ if os.environ.get("MITTAB_LOG_QUERIES"):
             "handlers": ["console"],
         }
     }
+
+
+CSRF_TRUSTED_ORIGINS = ["https://mittab-test12-d94g6.ondigitalocean.app", "https://test12.uva-tab.site", "https://nu-tab.com",  "http://localhost:8000",
+    "http://127.0.0.1:8000",]
