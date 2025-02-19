@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='mittab',
-    version='2.0.0',
+    version='3.0.0',
     description='A web application to tabulate and run APDA tournaments',
     author='Joseph Lynch',
     author_email='jolynch@mit.edu',
