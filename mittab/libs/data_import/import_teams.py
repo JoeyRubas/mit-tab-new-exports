@@ -6,8 +6,8 @@ from mittab.libs.data_import import Workbook, WorkbookImporter, InvalidWorkbookE
 def import_teams(file_to_import):
     try:
         workbook = Workbook(file_to_import, 8)
-    except InvalidWorkbookException:
-        return ["Teams file is not a valid .xlsx file"]
+    except InvalidWorkbookException as e:
+        raise e
     return TeamImporter(workbook).import_data()
 
 

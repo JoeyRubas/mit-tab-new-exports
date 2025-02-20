@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from django.forms import ModelForm
-import xlrd
+import openpyxl
 
 
 class InvalidWorkbookException(Exception):
@@ -15,16 +15,13 @@ class Workbook:
 
     def __init__(self, file_to_import, min_rows):
         self.min_rows = min_rows
-        try:
-            self.sheet = xlrd.open_workbook(
-                filename=None,
-                file_contents=file_to_import.read()).sheet_by_index(0)
-        except:
-            raise InvalidWorkbookException("Could not open workbook")
+        self.workbook = openpyxl.load_workbook(file_to_import)
+        self.sheet = self.workbook.active
 
     def get(self, row, col):
         try:
-            return str(self.sheet.cell(row, col).value)
+            cell_value = self.sheet.cell(row=row + 1, column=col + 1).value  # openpyxl uses 1-based indexing
+            return str(cell_value) if cell_value is not None else None
         except IndexError:
             return None
 
