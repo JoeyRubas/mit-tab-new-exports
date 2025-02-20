@@ -278,6 +278,12 @@ class Team(models.Model):
             return ", ".join([debater.name for debater in self.debaters.all()])
         return ""
 
+    def get_or_create_team_code(self):
+        if not self.team_code:
+            self.set_unique_team_code()
+            self.save()
+        return self.team_code
+
     class Meta:
         ordering = ["pk"]
 

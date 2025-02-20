@@ -662,6 +662,15 @@ class OutroundResultEntryForm(forms.Form):
         return round_obj
 
 
+class ExportFormatForm(forms.Form):
+    EXPORT_CHOICES = [
+        ("csv", "CSV"),
+        ("xml", "XML"),
+        ("json", "JSON"),
+    ]
+    format = forms.ChoiceField(choices=EXPORT_CHOICES, label="Export Format")
+
+
 class RoomTagForm(forms.ModelForm):
     
     teams = forms.ModelMultipleChoiceField(
