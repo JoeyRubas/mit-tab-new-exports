@@ -45,6 +45,10 @@ urlpatterns = [
     path("view_judges/", judge_views.view_judges, name="view_judges"),
     path("enter_judge/", judge_views.enter_judge, name="enter_judge"),
     path("batch_checkin/", judge_views.batch_checkin, name="batch_checkin"),
+    path("batch_team_checkin/", views.batch_team_checkin, name="batch_team_checkin"),
+    re_path(r"^team/(\d+)/check_ins/$",
+        views.team_check_in,
+        name="team_check_in"),
 
     # School related
     re_path(r"^school/(\d+)/$", views.view_school, name="view_school"),

@@ -9,6 +9,7 @@ import bsCustomFileInput from "bs-custom-file-input";
 import ballotsInit from "./ballots";
 import checkinInit from "./batchCheckin";
 import roomCheckinInit from "./roomBatchCheckin";
+import teamCheckinInit from "./teamBatchCheckin";
 import filtersInit from "./filters";
 import quickSearchInit from "./quickSearch";
 import roomBatchTagInit from "./roomBatchTag";
@@ -44,11 +45,11 @@ $(document).ready(() => {
   ballotsInit();
   checkinInit();
   roomCheckinInit();
+  teamCheckinInit();
   filtersInit();
   quickSearchInit();
   roomBatchTagInit();
   bsCustomFileInput.init();
-
   initializeConfirms();
   initializeRevealButtons();
   loadTabCards();

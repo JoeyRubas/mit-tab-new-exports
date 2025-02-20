@@ -373,6 +373,16 @@ def room_check_in(request, room_id, round_number):
         raise Http404("Must be POST or DELETE")
     return JsonResponse({"success": True})
 
+@permission_required("tab.tab_settings.can_change", login_url="/403")
+def team_check_in(request, team_id):
+    team_id = int(team_id)
+
+
+    team = get_object_or_404(Team, pk=team_id)
+    team.checked_in = not team.checked_in
+    team.save()
+    return JsonResponse({"success": True})
+
 
 @permission_required("tab.scratch.can_delete", login_url="/403/")
 def delete_scratch(request, item_id, scratch_id):
@@ -571,3 +581,10 @@ def add_emojis(request):
         judge.add_emoji()
         judge.save()
     return redirect_and_flash_success(request, "Added emojis to judges")
+
+def batch_team_checkin(request):
+    team_and_checkins = []
+    team_and_checkins = [(team, team.checked_in) for team in Team.objects.all()]
+    return render(request, "tab/batch_team_checkin.html", {
+        "teams_and_checkins": team_and_checkins,
+    })
