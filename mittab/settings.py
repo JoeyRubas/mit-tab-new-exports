@@ -155,6 +155,14 @@ if os.environ.get("MITTAB_LOG_QUERIES"):
         }
     }
 
+DOMAINS = os.getenv("DOMAINS", "").split(",")
 
-CSRF_TRUSTED_ORIGINS = ["https://mittab-test12-d94g6.ondigitalocean.app", "https://test12.uva-tab.site", "https://nu-tab.com",  "http://localhost:8000",
-    "http://127.0.0.1:8000",]
+CSRF = ["localhost:8000", "127.0.0.1:8000", "uva-tab.site",  "auamericangirldoll.uva-tab.site"]
+httpsv = [f"https://{domain}" for domain in DOMAINS]
+dotv = [f".{domain}" for domain in DOMAINS]
+CSRF = CSRF + httpsv + dotv
+slash = [domain + "/" for domain in CSRF]
+CSRF_TRUSTED_ORIGINS = CSRF + slash
+
+
+print(CSRF_TRUSTED_ORIGINS)
