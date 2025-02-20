@@ -134,6 +134,7 @@ urlpatterns = [
     re_path(r"^round/(\d+)/assign_judge/(\d+)/(\d+)/$",
         pairing_views.assign_judge,
         name="swap_judge"),
+    path("pairings/add_emojis/", views.add_emojis, name="add_emojis"),
     path("pairing/pair_round/", pairing_views.pair_round, name="pair_round"),
     path("pairing/assign_judges/",
         pairing_views.assign_judges_to_pairing,

@@ -510,3 +510,10 @@ def generate_archive(request):
     response["Content-Length"] = len(xml)
     response["Content-Disposition"] = "attachment; filename=%s" % filename
     return response
+
+@permission_required("tab.tab_settings.can_change", login_url="/403/")
+def add_emojis(request):
+    for judge in Judge.objects.all():
+        judge.add_emoji()
+        judge.save()
+    return redirect_and_flash_success(request, "Added emojis to judges")

@@ -21,7 +21,9 @@
 
 <div class="col container-fluid index">
   {% quick_search %}
-
+  <div class="text-center mt-4">
+    <a href="pairings/add_emojis" class="btn btn-primary">Add Emojis</a>
+  </div>
   <div class="row index_container">
 
     {% with count=number_schools model_name="Schools" list_data=school_list %}
