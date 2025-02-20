@@ -149,7 +149,7 @@ urlpatterns = [
         name="assign_judges_to_pairing"),
     
     path("round/<int:round_id>/assign_room/<int:room_id>/", pairing_views.assign_room, name="assign_room"),
-    path("round/<int:round_id>/assign_room/<int:room_id>/<int:swap_id>/", pairing_views.assign_room, name="swap_judge"),
+    path("round/<int:round_id>/assign_room/<int:room_id>/<int:remove_id>/", pairing_views.assign_room, name="swap_judge"),
     path("pairing/assign_rooms_to_pairing/", pairing_views.assign_rooms_to_pairing, name="assign_rooms_to_pairing"),
     path("pairing/confirm_start_tourny/",    
         pairing_views.confirm_start_new_tourny,

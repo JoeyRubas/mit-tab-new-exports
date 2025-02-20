@@ -132,12 +132,11 @@ def alternative_rooms(request, round_id, room_id=""):
 
     # Get the current room if valid
     current_room_obj = None
-    if room_id.isdigit():
-        try:
-            current_room_obj = Room.objects.get(id=int(room_id))
-        except Room.DoesNotExist:
-            pass
-
+    if isinstance(room_id, str) and room_id.isdigit():
+        room_id = int(room_id)
+    if isinstance(room_id, int):
+        current_room_obj = get_object_or_404(Room, id=room_id)
+    
     # Fetch all rooms checked in for the given round, ordered by rank
     checked_in_rooms = Room.objects.filter(
         roomcheckin__round_number=round_number
