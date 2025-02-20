@@ -1,3 +1,4 @@
+from collections import defaultdict
 import csv
 import json
 from django.contrib.auth.decorators import permission_required
@@ -336,13 +337,16 @@ def enter_room(request):
 
 
 def batch_checkin(request):
-    rooms_and_checkins = []
+    round_numbers = [i + 1 for i in range(TabSettings.get("tot_rounds"))]
+    all_checkins = RoomCheckIn.objects.all().values_list("room_id", "round_number")
 
-    round_numbers = list([i + 1 for i in range(TabSettings.get("tot_rounds"))])
+    checkin_dict = defaultdict(set)
+    for room_id, round_number in all_checkins:
+        checkin_dict[room_id].add(round_number)
+
+    rooms_and_checkins = []
     for room in Room.objects.all():
-        checkins = []
-        for round_number in [0] + round_numbers:  # 0 is for outrounds
-            checkins.append(room.is_checked_in_for_round(round_number))
+        checkins = [(round_number in checkin_dict[room.id]) for round_number in [0] + round_numbers]
         rooms_and_checkins.append((room, checkins))
 
     return render(request, "tab/room_batch_checkin.html", {
