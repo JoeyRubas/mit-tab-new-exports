@@ -160,8 +160,9 @@ DOMAINS = os.getenv("DOMAINS", "").split(",")
 CSRF = ["localhost:8000", "127.0.0.1:8000", "uva-tab.site",  "auamericangirldoll.uva-tab.site"]
 httpsv = [f"https://{domain}" for domain in CSRF]
 https2 = [f"https://*.{domain}" for domain in CSRF]
-dotv = [f".{domain}" for domain in CSRF]
-CSRF = CSRF + httpsv + dotv+https2
+httpv = [f"http://{domain}" for domain in CSRF]
+http2 = [f"http://*.{domain}" for domain in CSRF]
+CSRF =  httpsv +https2 +httpv + http2 + DOMAINS
 slash = [domain + "/" for domain in CSRF]
 CSRF_TRUSTED_ORIGINS = CSRF + slash +DOMAINS
 
