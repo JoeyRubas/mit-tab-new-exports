@@ -158,11 +158,12 @@ if os.environ.get("MITTAB_LOG_QUERIES"):
 DOMAINS = os.getenv("DOMAINS", "").split(",")
 
 CSRF = ["localhost:8000", "127.0.0.1:8000", "uva-tab.site",  "auamericangirldoll.uva-tab.site"]
-httpsv = [f"https://{domain}" for domain in DOMAINS]
-dotv = [f".{domain}" for domain in DOMAINS]
-CSRF = CSRF + httpsv + dotv
+httpsv = [f"https://{domain}" for domain in CSRF]
+https2 = [f"https://*.{domain}" for domain in CSRF]
+dotv = [f".{domain}" for domain in CSRF]
+CSRF = CSRF + httpsv + dotv+https2
 slash = [domain + "/" for domain in CSRF]
-CSRF_TRUSTED_ORIGINS = CSRF + slash
+CSRF_TRUSTED_ORIGINS = CSRF + slash +DOMAINS
 
 
-print(CSRF_TRUSTED_ORIGINS)
+#print(CSRF_TRUSTED_ORIGINS)
