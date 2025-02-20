@@ -144,9 +144,9 @@ urlpatterns = [
         name="swap_judge"),
     path("pairings/add_emojis/", views.add_emojis, name="add_emojis"),
     path("pairing/pair_round/", pairing_views.pair_round, name="pair_round"),
-    path("pairing/assign_judges/",
+    path("pairing/assign_judges_to_pairing/",
         pairing_views.assign_judges_to_pairing,
-        name="assign_judges"),
+        name="assign_judges_to_pairing"),
     
     path("round/<int:round_id>/assign_room/<int:room_id>/", pairing_views.assign_room, name="assign_room"),
     path("round/<int:round_id>/assign_room/<int:room_id>/<int:swap_id>/", pairing_views.assign_room, name="swap_judge"),
