@@ -1,4 +1,5 @@
 <head>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   {% load render_bundle from webpack_loader %}
   {% render_bundle 'main' 'js' %}
 
@@ -34,6 +35,7 @@ table#pairing_list td{
     text-align: center;
 }
   </style>
+  
 </head>
 
 {% for team in all_teams %}

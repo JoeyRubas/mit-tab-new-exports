@@ -1,12 +1,12 @@
-$body-bg: #BFD9FF;
-$font-size-base: 0.95rem !default;
+$body-bg: #ffd8f3;
+$font-size-base: 4rem !default;
 
 .form-control {
   background-image: none !important;
 }
 
 .bg-dark {
-  background-color: #00438A !important;
+  background-color: #941679 !important;
 }
 
 .navbar-brand {
@@ -16,6 +16,10 @@ $font-size-base: 0.95rem !default;
 .no-nav {
   margin-left: auto;
   margin-right: auto;
+}
+
+.navbar {
+  background-color: #7e4e73 !important;
 }
 
 .navbar-dark .nav-link {
@@ -93,6 +97,14 @@ $font-size-base: 0.95rem !default;
   width: 100%;
 }
 
+.btn-pink {
+  background-color: #740b3c;
+}
+
+.btn-success {
+  background-color: #9c3379 !important;
+}
+
 .color-picker {
   width: 40px;
   height: 40px;
@@ -113,13 +125,16 @@ $font-size-base: 0.95rem !default;
   }
 
   &:hover {
-    border-color: #007bff;
+    border-color: #f8c0fa;
     box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
   }
 
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #f9bbff;
     box-shadow: 0 0 6px rgba(0, 123, 255, 0.75);
   }
+
+
 }
+
