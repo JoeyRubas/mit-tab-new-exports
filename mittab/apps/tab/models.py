@@ -139,7 +139,7 @@ class Debater(models.Model):
 
 
 class Team(models.Model):
-    name = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=50, unique=True)
     school = models.ForeignKey("School", on_delete=models.CASCADE)
     hybrid_school = models.ForeignKey("School",
                                       blank=True,
@@ -207,6 +207,16 @@ class Team(models.Model):
             "debaters__team_set",
             "debaters__team_set__no_shows",
         )
+    
+    def add_emoji(self):
+        """Delete all emojis from judge name, and add a random one to the end"""
+
+        random_emoji = random.choice(emoji_list)
+
+        cleaned_name = emoji.replace_emoji(self.name, replace='')
+
+        self.name = f"{cleaned_name} {random_emoji}"
+        self.save()
 
     def set_unique_team_code(self):
         haikunator = Haikunator()
