@@ -273,6 +273,7 @@ def view_round(request, round_number):
     errors, excluded_teams = [], []
 
     tot_rounds = TabSettings.get("tot_rounds", 5)
+    simulate_round_button = TabSettings.get("simulate_round", 0)
 
     round_pairing = tab_logic.sorted_pairings(round_number, fetch_room_tags=True)
     # For the template since we can't pass in something nicer like a hash

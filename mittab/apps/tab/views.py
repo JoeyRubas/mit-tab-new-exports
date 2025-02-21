@@ -18,6 +18,7 @@ from mittab.apps.tab.helpers import redirect_and_flash_error, \
 from mittab.apps.tab.models import *
 from mittab.libs import cache_logic
 from mittab.libs.tab_logic import TabFlags
+from django.core.management import call_command
 from mittab.libs.data_import import import_judges, import_rooms, import_teams, \
     import_scratches
 
@@ -353,6 +354,14 @@ def batch_checkin(request):
         "rooms_and_checkins": rooms_and_checkins,
         "round_numbers": round_numbers
     })
+
+@permission_required("tab.tab_settings.can_change", login_url="/403")
+def simulate_round(request):
+    if TabSettings.get("simulate_round") == 0:
+        return redirect_and_flash_error(request, "Simulated rounds are disabled")
+    call_command('simulate_rounds')
+
+    return redirect_and_flash_success(request, "Simulated round " )
 
 
 @permission_required("tab.tab_settings.can_change", login_url="/403")

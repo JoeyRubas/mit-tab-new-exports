@@ -38,6 +38,16 @@
               {% endif %}
             </div>
           </form>
+          {% if simulate_round_button %}
+            <form action="/pairings/simulate_rounds/" method="post" class="d-inline">
+              {% csrf_token %}
+              <div class="btn-group btn-group-sm">
+                <button id="simulate-round" type="submit" class="mid btn btn-primary" title="Simulate the round">
+                  <i class="fas fa-play"></i> Simulate Round
+                </button>
+              </div>
+            </form>
+          {% endif %}
           <form action="/pairing/assign_rooms_to_pairing/" method="post" 
                 onsubmit="return confirm('Do you really want to assign rooms? All previous assignments will be lost. If you are unsure, click cancel and back up')" 
                 class="d-inline">

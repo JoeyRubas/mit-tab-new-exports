@@ -60,3 +60,8 @@
   description: "Toggle to disable room seeding. When enabled, rooms are assigned randomly after fulfilling room tags."
   value: false
   type: boolean
+- simulate-round-button:
+  name: simulate_round
+  description: "A toggle to enable the simulate round button on the admin interface.  If 1, the button will be visible.  If 0, the button will not be visible."
+  value: false
+  type: boolean
