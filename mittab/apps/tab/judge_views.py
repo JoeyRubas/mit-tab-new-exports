@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.contrib.auth.decorators import permission_required
 from django.http import Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -215,14 +216,23 @@ def view_scratches(request, judge_id):
 
 
 def batch_checkin(request):
-    judges_and_checkins = []
+    judges = list(Judge.objects.all())  # Fetch all judges in one query
+    round_numbers = [i + 1 for i in range(TabSettings.get("tot_rounds"))]
+    all_rounds = [0] + round_numbers  # Include outrounds (0)
 
-    round_numbers = list([i + 1 for i in range(TabSettings.get("tot_rounds"))])
-    for judge in Judge.objects.all():
-        checkins = []
-        for round_number in [0] + round_numbers:  # 0 is for outrounds
-            checkins.append(judge.is_checked_in_for_round(round_number))
-        judges_and_checkins.append((judge, checkins))
+    # Fetch all check-ins in one query
+    checkins = CheckIn.objects.filter(round_number__in=all_rounds)
+
+    # Create a dictionary mapping (judge_id, round_number) -> True (checked in)
+    checkin_dict = defaultdict(lambda: False)
+    for checkin in checkins:
+        checkin_dict[(checkin.judge_id, checkin.round_number)] = True
+
+    # Build the data structure
+    judges_and_checkins = [
+        (judge, [checkin_dict[(judge.id, round_number)] for round_number in all_rounds])
+        for judge in judges
+    ]
 
     return render(request, "tab/batch_checkin.html", {
         "judges_and_checkins": judges_and_checkins,
