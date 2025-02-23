@@ -162,9 +162,10 @@ httpsv = [f"https://{domain}" for domain in CSRF]
 https2 = [f"https://*.{domain}" for domain in CSRF]
 httpv = [f"http://{domain}" for domain in CSRF]
 http2 = [f"http://*.{domain}" for domain in CSRF]
-CSRF =  httpsv +https2 +httpv + http2 + DOMAINS
+CSRF =  httpsv +https2 +httpv + http2
 slash = [domain + "/" for domain in CSRF]
-CSRF_TRUSTED_ORIGINS = CSRF + slash +DOMAINS
+CSRF_TRUSTED_ORIGINS = CSRF + slash
+print(CSRF_TRUSTED_ORIGINS)
 
 
 #print(CSRF_TRUSTED_ORIGINS)
