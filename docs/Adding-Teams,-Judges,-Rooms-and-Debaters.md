@@ -55,11 +55,11 @@ Here is the format of the .xlsx file:
 ### Judges
 
 ```eval_rst
-+-------+-------+-----------------------------------+
-| Name* | Rank* | Affiliated Schools (1 per column) |
-+-------+-------+-----------------------------------+
-|       |       |                                   |
-+-------+-------+-----------------------------------+
++-------+-------+-----------+-----------------------------------+
+| Name* | Rank* | Is Dino?  | Affiliated Schools (1 per column) |
++-------+-------+-----------+-----------------------------------+
+|       |       |           |                                   |
++-------+-------+-----------+-----------------------------------+
 ```
 
 ### Rooms
@@ -98,7 +98,8 @@ at any given moment.
 1. Name - Name of the judge.
 2. Rank - A number from 0.0 - 99.99 that represents the relative ranking of this
 judge. Higher is a "better" judge.
-3. Affiliated Schools - A list of schools that this judge should be unable to
+3. Is Dino? - "yes" indicates the judge is a Dino. Used for the forum post generator.
+4. Affiliated Schools - A list of schools that this judge should be unable to
 judge. **Use this for team scratches as well as multiple affiliations**
 
 ### Teams

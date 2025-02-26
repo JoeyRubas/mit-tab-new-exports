@@ -169,6 +169,7 @@ urlpatterns = [
         pairing_views.enter_e_ballot,
         name="enter_e_ballot"),
     url(r"^batch_checkin/$", views.batch_checkin, name="batch_checkin"),
+    path("forum_post", views.forum_post, name="forum_post"),
 
     # Outround related
     url(r"break/",
