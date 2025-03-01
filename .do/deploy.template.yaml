@@ -76,4 +76,10 @@ static_sites:
   name: static
   output_dir: /var/www/tab/staticfiles/webpack_bundles
   routes:
-  - path: /static/webpack_bundles/
+    - path: /static/webpack_bundles/
+
+- name: django-static  
+  routes:
+    - path: /static/
+  source_dir: /var/www/tab/staticfiles
+
