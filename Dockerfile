@@ -31,6 +31,9 @@ RUN mkdir -p /var/www/tab/assets/bundles
 RUN mkdir -p /var/www/tab/staticfiles
 RUN ./node_modules/.bin/webpack --config webpack.config.js --mode production
 RUN python manage.py collectstatic --noinput
+RUN chmod -R 755 /var/www/tab/staticfiles /var/www/tab/assets/bundles && \
+    chown -R www-data:www-data /var/www/tab/staticfiles /var/www/tab/assets/bundles
+
 
 RUN mkdir /var/tmp/django_cache
 
