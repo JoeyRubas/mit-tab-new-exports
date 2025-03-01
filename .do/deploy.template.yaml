@@ -74,6 +74,6 @@ static_sites:
     branch: main
     repo: MIT-Tab/mit-tab
   name: static
-  output_dir: /var/www/tab/staticfiles
+  output_dir: /var/www/tab/staticfiles/webpack_bundles
   routes:
-  - path: /static
+  - path: /static/webpack_bundles/
