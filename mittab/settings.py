@@ -28,6 +28,7 @@ STATICFILES_DIRS = [
 ]
 
 MIDDLEWARE = (
+    "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "mittab.apps.tab.middleware.FailoverDuringBackup",
     "django.contrib.sessions.middleware.SessionMiddleware",
