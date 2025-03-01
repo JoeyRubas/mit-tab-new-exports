@@ -23,6 +23,10 @@ INSTALLED_APPS = [ "django.contrib.admin", "django.contrib.auth",
 if DEBUG:
     INSTALLED_APPS = ["whitenoise.runserver_nostatic"]+INSTALLED_APPS 
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "assets"),  # Only Webpack, not all assets
+]
+
 MIDDLEWARE = (
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "mittab.apps.tab.middleware.FailoverDuringBackup",
@@ -95,7 +99,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 WEBPACK_LOADER = {
     "DEFAULT": {
-        "BUNDLE_DIR_NAME": "webpack_bundles/",
+        "BUNDLE_DIR_NAME": "assets/webpack_bundles/",
         "STATS_FILE": os.path.join(BASE_DIR, "webpack-stats.json"),
     }
 }

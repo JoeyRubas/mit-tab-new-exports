@@ -73,7 +73,7 @@ static_sites:
   github:
     branch: main
     repo: MIT-Tab/mit-tab
-  name: assets
-  output_dir: /var/www/tab/assets
+  name: static
+  output_dir: /var/www/tab/staticfiles
   routes:
-  - path: /assets
+  - path: /static
