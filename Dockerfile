@@ -27,10 +27,13 @@ RUN apt-get install -y nodejs aptitude
 RUN aptitude install -y npm
 
 RUN npm install
+RUN mkdir -p /var/www/tab/assets/bundles
+RUN mkdir -p /var/www/tab/staticfiles
 RUN ./node_modules/.bin/webpack --config webpack.config.js --mode production
 RUN python manage.py collectstatic --noinput
 
 RUN mkdir /var/tmp/django_cache
+
 
 EXPOSE 8000
 CMD ["/var/www/tab/bin/start-server.sh"]
