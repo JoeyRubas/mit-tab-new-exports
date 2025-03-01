@@ -17,7 +17,7 @@ module.exports = {
   },
   output: {
     path: path.resolve("./assets/webpack_bundles/"),
-    publicPath: "/static/webpack_bundles/",
+    publicPath: "/assets/webpack_bundles/",
     filename: "[name]-[hash].js",
   },
   module: {
