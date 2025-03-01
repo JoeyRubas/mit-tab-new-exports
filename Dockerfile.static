@@ -22,6 +22,9 @@ RUN pip install pipenv
 RUN pipenv install --deploy --system
 
 RUN mkdir /var/tmp/django_cache
+RUN mkdir -p /var/www/tab/assets/bundles
+RUN chmod -R 755 /var/www/tab/staticfiles /var/www/tab/assets/bundles
+
 
 RUN npm install
 RUN ./node_modules/.bin/webpack --config webpack.config.js --mode production

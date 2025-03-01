@@ -31,3 +31,4 @@ fi
 
 /usr/local/bin/gunicorn --worker-tmp-dir /dev/shm \
   mittab.wsgi:application -w 2 --bind 0.0.0.0:8000 -t 300
+  --static-map /static=/var/www/tab/staticfiles --static-map /assets=/var/www/tab/assets/bundles
