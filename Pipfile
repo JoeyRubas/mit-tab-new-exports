@@ -30,6 +30,7 @@ selenium = "==3.141.0"
 splinter = "==0.10.0"
 Django = "==2.2.10"
 PyYAML = "==5.1.2"
+whitenoise = "*"
 
 [requires]
 python_version = "3.7"
