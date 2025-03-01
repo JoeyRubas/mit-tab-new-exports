@@ -15,11 +15,13 @@ ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
-INSTALLED_APPS = ("whitenoise.runserver_nostatic", "django.contrib.admin", "django.contrib.auth",
+INSTALLED_APPS = [ "django.contrib.admin", "django.contrib.auth",
                   "django.contrib.contenttypes", "django.contrib.sessions",
                   "django.contrib.messages", "django.contrib.staticfiles",
                   "mittab.apps.tab", "raven.contrib.django.raven_compat",
-                  "webpack_loader", "bootstrap4",)
+                  "webpack_loader", "bootstrap4",]
+if DEBUG:
+    INSTALLED_APPS = ["whitenoise.runserver_nostatic"]+INSTALLED_APPS 
 
 MIDDLEWARE = (
     "whitenoise.middleware.WhiteNoiseMiddleware",
