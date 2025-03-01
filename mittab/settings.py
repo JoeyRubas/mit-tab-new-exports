@@ -22,6 +22,7 @@ INSTALLED_APPS = ("whitenoise.runserver_nostatic", "django.contrib.admin", "djan
                   "webpack_loader", "bootstrap4",)
 
 MIDDLEWARE = (
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "mittab.apps.tab.middleware.FailoverDuringBackup",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
