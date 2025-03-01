@@ -44,6 +44,8 @@ ROOT_URLCONF = "mittab.urls"
 
 WSGI_APPLICATION = "mittab.wsgi.application"
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 DATABASES = {
     "default": {
         "ENGINE":   "django.db.backends.mysql",
