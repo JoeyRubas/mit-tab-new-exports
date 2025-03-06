@@ -1,6 +1,8 @@
 import random
 
 from haikunator import Haikunator
+import emoji
+import re
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -137,8 +139,24 @@ class Debater(models.Model):
         ordering = ["name"]
 
 
+emoji_list = [
+    "😄", "😍", "😱", "👿", "🤖", "💔", "💀", "🥸", "👹", "😵", "🗣", "🫂", "🦸‍♂️", "👄", "💬", "👨‍💻",
+    "👩‍🚒", "🏄‍♀️", "👯‍♀️", "🧞‍♂️", "🎍", "🎒", "🎓", "🎏", "🎆", "🎃", "🎄", "🎁", "🎉", "🎈", "🔮",
+    "🎥", "📷", "🔔", "🔉", "🛰", "☎️", "📗", "🎻", "🎵", "🛡", "👝", "📁", "✉️", "📧", "🏅", "🛠", "🛒",
+    "🧣", "🗃", "📸", "🪥", "🎽", "👔", "🗒", "📽", "🪡", "🧼️", "🧿️", "🧸️", "🥂", "🥃", "🥄", "🥁", "🛒",
+    "🧠", "🧣", "🧤", "🧥", "🧽️", "🪙", "🧮️", "🗺", "💐", "🌹", "🍁", "🌾", "🍄", "🌵", "🌙", "💧", "🔥",
+    "✨", "🪴", "🌈", "⛈", "☄️", "⛰", "☘️", "⭐️", "⛅️", "🏜", "🆖", "📶", "🔤", "💲", "☣️", "💥", "💯",
+    "♠️", "♣️", "✖️", "🍲", "🥚", "🍊", "🥛", "🍦", "🍦", "🥟", "🥓", "🥞", "🥖", "🥐", "🥜", "🥒", "🥕",
+    "🥔", "🌯", "🚢", "⛵️", "🚚", "🚓", "🚑", "🚲", "🚟", "⛴", "🚏", "🛣", "🚋", "🚇", "🚈", "🚅", "🚆",
+    "🚞", "🚊", "🚂", "🚦", "🛳", "🛬", "🛫", "🛩", "🛥", "🛤", "🎢", "🛹️", "🛵", "🐖", "🦅", "🐈", "🦀",
+    "🐏", "🐴", "🐜", "👍", "👎", "👌", "✌️", "👋", "👐", "👆", "👈", "🙏", "💪", "🖐️", "✍️", "⏪", "🔁",
+    "🔀", "🏡", "🏦", "🏩", "🏨", "⛪️", "🏤", "🕌", "🕍", "🌆", "🏯", "⛺️", "🏭", "🗼", "🏘", "🏙", "🏗",
+    "🛖", "🪦", "🎲", "🎯", "🏀", "🏈️", "⚽️", "🎾", "🎳", "🏁", "🏏", "⛸️", "⛳️", "🏇", "🏆", "🏑", "🏒",
+    "🏓", "🥈", "🤼‍♂️", "🎣", "🪱", "🦣", "🦔", "🦖", "🦊", "🐎", "🦃", "🦐"
+]
+
 class Team(models.Model):
-    name = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=50, unique=True)
     school = models.ForeignKey("School", on_delete=models.CASCADE)
     hybrid_school = models.ForeignKey("School",
                                       blank=True,
@@ -220,6 +238,15 @@ class Team(models.Model):
             code = gen_haiku_and_clean()
 
         self.team_code = code
+
+    def add_emoji(self):
+        """Delete all emojis from judge name, and add a random one to the end"""
+
+        random_emoji = random.choice(emoji_list)
+        cleaned_name = emoji.replace_emoji(self.name, replace='').strip()
+
+        self.name = f"{cleaned_name} {random_emoji}"
+        self.save()
 
     def save(self,
              *args,
@@ -305,7 +332,7 @@ class BreakingTeam(models.Model):
 
 
 class Judge(models.Model):
-    name = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=50, unique=True)
     rank = models.DecimalField(max_digits=4, decimal_places=2)
     schools = models.ManyToManyField(School)
     ballot_code = models.CharField(max_length=255,
@@ -351,6 +378,15 @@ class Judge(models.Model):
         for checkin in checkins:
             checkin.delete()
         super(Judge, self).delete(using, keep_parents)
+
+    def add_emoji(self):
+        """Delete all emojis from judge name, and add a random one to the end"""
+
+        random_emoji = random.choice(emoji_list)
+        cleaned_name = emoji.replace_emoji(self.name, replace='').strip()
+
+        self.name = f"{cleaned_name} {random_emoji}"
+        self.save()
 
     class Meta:
         ordering = ["name"]

@@ -1,6 +1,14 @@
 <div class="col-sm" id="school_list">
   <h4 class="text-center font-weight-normal">
     {{count}} {{model_name}}
+    {% if add_emoji_path %}
+      <a class="btn btn-sm btn-light" 
+        href="{{ add_emoji_path }}"
+        title="Add Emojis"
+        id="{{ html_id }}-btn-emojis">
+        Add Emojis
+      </a>
+    {% endif %}
     <div class="btn-group btn-group-sm">
       <a class="btn btn-sm btn-light" href="{{ list_path }}"
         title="List {{model_name|lower}}"
