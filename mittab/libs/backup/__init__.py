@@ -18,15 +18,17 @@ MANUAL = 0
 INITAL = 1
 BEFORE_NEW_TOURNAMENT = 2
 BEFORE_JUDGE_ASSIGN = 3
-BEFORE_PAIRING = 4
-BEFORE_BREAK = 5
-UPLOAD = 6
-OTHER = 7
+BEFORE_ROOM_ASSIGN = 4
+BEFORE_PAIRING = 5
+BEFORE_BREAK = 6
+UPLOAD = 7
+OTHER = 8
 TYPE_CHOICES = (
     (MANUAL, "Manual"),
     (INITAL, "Inital"),
     (BEFORE_NEW_TOURNAMENT, "Before New Tournament"),
     (BEFORE_JUDGE_ASSIGN, "Before Judge Assign"),
+    (BEFORE_ROOM_ASSIGN, "Before Room Assign"),
     (BEFORE_PAIRING, "Before Pairing"),
     (BEFORE_BREAK, "Before the Break"),
     (UPLOAD, "Upload"),

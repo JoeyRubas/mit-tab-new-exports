@@ -115,8 +115,7 @@ def assign_rooms_to_pairing(request):
     current_round_number = TabSettings.objects.get(key="cur_round").value - 1
     if request.method == "POST":
         try:
-            backup.backup_round("round_%s_before_room_assignment" %
-                                current_round_number)
+            backup.backup_round(btype=backup.BEFORE_ROOM_ASSIGN,)
             assign_rooms.add_rooms()
         except Exception:
             emit_current_exception()
