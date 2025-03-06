@@ -1,4 +1,4 @@
-$body-bg: #BFD9FF;
+$body-bg: #ffd8f3;
 $font-size-base: 0.95rem !default;
 
 .form-control {
@@ -8,7 +8,7 @@ $font-size-base: 0.95rem !default;
 @import "node_modules/bootstrap/scss/bootstrap";
 
 .bg-dark {
-  background-color: #00438A !important;
+  background-color: #941679 !important;
 }
 
 .navbar-brand {
@@ -18,6 +18,10 @@ $font-size-base: 0.95rem !default;
 .no-nav {
   margin-left: auto;
   margin-right: auto;
+}
+
+.navbar {
+  background-color: #7e4e73 !important;
 }
 
 .navbar-dark .nav-link {
@@ -94,3 +98,45 @@ $font-size-base: 0.95rem !default;
 .form-inline .input-group {
   width: 100%;
 }
+
+.btn-pink {
+  background-color: #740b3c;
+}
+
+.btn-success {
+  background-color: #9c3379 !important;
+}
+
+.color-picker {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 20%;
+  padding: 2px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &::-webkit-color-swatch {
+    border-radius: 10%;
+    border: none;
+  }
+
+  &::-moz-color-swatch {
+    border-radius: 10%;
+    border: none;
+  }
+
+  &:hover {
+    border-color: #f8c0fa;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #f9bbff;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.75);
+  }
+
+
+}
+

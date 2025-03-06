@@ -19,7 +19,7 @@ body
     padding:                .5em;
     margin:                 0em;
 
-    background:             #9CF;
+    background:             rgb(246, 173, 248);
     border-bottom:          .1em solid #000;
 }
 
@@ -54,7 +54,7 @@ body
 
 .public_table tr:nth-child(even)
 {
-    background:             #DEF;
+    background:             rgb(255, 215, 240);
 }
 
 .public_table th
@@ -80,7 +80,7 @@ body
     padding:                .5em;
     margin:                 0em;
 
-    background:             #BDF;
+    background:             rgb(255, 161, 197);
     border-top:             .15em solid #000;
 }
 .public_footer_printable
@@ -91,7 +91,7 @@ body
     padding:                .5em;
     margin:                 0em;
 
-    background:             #BDF;
+    background:             rgb(228, 173, 219);
     border:                 .15em solid #000;
 }
 
@@ -99,6 +99,10 @@ body
 {
     height:                 2.5em;
 }
+
+.btn-pink {
+    background-color: #740b3c;
+  }
 
 .printable
 {
