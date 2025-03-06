@@ -19,7 +19,7 @@ body
     padding:                .5em;
     margin:                 0em;
 
-    background:             #9CF;
+    background:             rgb(255, 184, 240);
     border-bottom:          .1em solid #000;
 }
 
@@ -54,7 +54,7 @@ body
 
 .pairings_table tr:nth-child(even)
 {
-    background:             #DEF;
+    background:             rgb(255, 231, 249);
 }
 
 .pairings_table th
@@ -69,7 +69,7 @@ body
     width:                  25%;
     min-width:              25%;
     text-overflow:          ellipsis;
-    border:                 1px solid #DDD;
+    border:                 1px solid #ffe6f4;
     padding:                .5em;
 }
 
@@ -84,7 +84,7 @@ body
     padding:                .5em;
     margin:                 0em;
 
-    background:             #BDF;
+    background:             rgb(255, 195, 240);
     border-top:             .15em solid #000;
 }
 .pairings_footer_printable
@@ -95,7 +95,7 @@ body
     padding:                .5em;
     margin:                 0em;
 
-    background:             #BDF;
+    background:             rgb(255, 179, 236);
     border:                 .15em solid #000;
 }
 
