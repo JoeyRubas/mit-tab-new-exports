@@ -34,6 +34,21 @@
               <i class="fas fa-gavel"></i> Assign Judges
             </button>
             {% endif %}  
+          </form>
+          <form action="/pairing/assign_rooms_to_pairing/" method="post" 
+                onsubmit="return confirm('Do you really want to assign rooms? All previous assignments will be lost. If you are unsure, click cancel and back up')" 
+                class="d-inline">
+            {% csrf_token %}
+            <div class="btn-group btn-group-sm">
+              {% if rooms_assigned %}
+              <button id="assign-rooms" type="submit" class="mid btn btn-success" title="Assign rooms to your pairing">
+                <i class="fas fa-chalkboard-teacher"></i> Assign Rooms Again
+              </button>
+              {% else %}
+              <button id="assign-rooms" type="submit" class="mid btn btn-warning" title="Assign rooms to your pairing">
+                <i class="fas fa-chalkboard-teacher"></i> Assign Rooms
+              </button>
+              {% endif %}
         </form>
             {% if simulate_round_button %}
             <form action="/pairings/simulate_rounds/" method="post" class="d-inline"> 
@@ -68,9 +83,8 @@
             </a>
 	    {% endif %}
           </div>
-        </form>
       </div>
-
+      <br>
       <div class="col-4">
         <h6>Display Options</h6>
         <div class="btn-group btn-group-sm">
