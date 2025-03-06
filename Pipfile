@@ -26,7 +26,7 @@ pytest-django = "==3.4.8"
 requests = "==2.31.0"
 selenium = "==3.141.0"
 splinter = "==0.10.0"
-Django = "==3.2.25"
+Django = "==5.1"
 PyYAML = "==5.1.2"
 sentry-sdk = {extras = ["django"], version = "*"}
 

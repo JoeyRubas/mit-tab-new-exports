@@ -94,6 +94,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "assets"), )
 
+CSRF_TRUSTED_ORIGINS = [
+    f"https://*.nu-tab.com"
+]
+
 WEBPACK_LOADER = {
     "DEFAULT": {
         "BUNDLE_DIR_NAME": "webpack_bundles/",
