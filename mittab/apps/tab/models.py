@@ -50,13 +50,15 @@ class TabSettings(models.Model):
         super(TabSettings, self).delete(using, keep_parents)
 
     def save(self,
+             *args,
              force_insert=False,
              force_update=False,
              using=None,
              update_fields=None):
         cache_logic.invalidate_cache("tab_settings_%s" % self.key,
                                      cache_logic.PERSISTENT)
-        super(TabSettings, self).save(force_insert, force_update, using, update_fields)
+        super(TabSettings, self).save(*args, force_insert,
+                                      force_update, using, update_fields)
 
 
 class School(models.Model):
@@ -99,6 +101,7 @@ class Debater(models.Model):
     tiebreaker = models.IntegerField(unique=True, null=True, blank=True)
 
     def save(self,
+             *args,
              force_insert=False,
              force_update=False,
              using=None,
@@ -106,7 +109,8 @@ class Debater(models.Model):
         while not self.tiebreaker or \
                 Debater.objects.filter(tiebreaker=self.tiebreaker).exists():
             self.tiebreaker = random.choice(range(0, 2**16))
-        super(Debater, self).save(force_insert, force_update, using, update_fields)
+        super(Debater, self).save(*args, force_insert,
+                                  force_update, using, update_fields)
 
     @property
     def num_teams(self):
@@ -218,6 +222,7 @@ class Team(models.Model):
         self.team_code = code
 
     def save(self,
+             *args,
              force_insert=False,
              force_update=False,
              using=None,
@@ -230,7 +235,7 @@ class Team(models.Model):
                 Team.objects.filter(tiebreaker=self.tiebreaker).exists():
             self.tiebreaker = random.choice(range(0, 2**16))
 
-        super(Team, self).save(force_insert, force_update, using, update_fields)
+        super(Team, self).save(*args, force_insert, force_update, using, update_fields)
 
     @property
     def display_backend(self):
@@ -312,6 +317,7 @@ class Judge(models.Model):
         self.ballot_code = code
 
     def save(self,
+             *args,
              force_insert=False,
              force_update=False,
              using=None,
@@ -320,7 +326,7 @@ class Judge(models.Model):
         if not self.ballot_code:
             self.set_unique_ballot_code()
 
-        super(Judge, self).save(force_insert, force_update, using,
+        super(Judge, self).save(*args, force_insert, force_update, using,
                                 update_fields)
 
     def is_checked_in_for_round(self, round_number):
@@ -510,6 +516,7 @@ class Round(models.Model):
                                                    self.opp_team)
 
     def save(self,
+             *args,
              force_insert=False,
              force_update=False,
              using=None,
@@ -521,7 +528,7 @@ class Round(models.Model):
         if no_shows:
             no_shows.delete()
 
-        super(Round, self).save(force_insert, force_update, using,
+        super(Round, self).save(*args, force_insert, force_update, using,
                                 update_fields)
 
     def delete(self, using=None, keep_parents=False):
