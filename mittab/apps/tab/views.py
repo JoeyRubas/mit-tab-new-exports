@@ -416,6 +416,19 @@ def simulate_round(request):
         return redirect_and_flash_success(request, "Simulated round")
     return redirect_and_flash_error(request, "Simulated rounds are disabled")
 
+def add_judge_emojis(request):
+    for judge in Judge.objects.all():
+        judge.add_emoji()
+        judge.save()
+    return redirect_and_flash_success(request, "Added emojis to judges")
+
+@permission_required("tab.tab_settings.can_change", login_url="/403/")
+def add_team_emojis(request):
+    for team in Team.objects.all():
+        team.add_emoji()
+        team.save()
+    return redirect_and_flash_success(request, "Added emojis to teams")
+
 def batch_checkin(request):
     judges_and_checkins = []
     rooms_and_checkins = []

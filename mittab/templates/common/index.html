@@ -34,17 +34,21 @@
 
     {% with count=number_judges model_name="Judges" list_data=judge_list %}
       {% with html_id="judge-list" list_path=view_judges %}
-        {% with enter_path=enter_judge view_path_prefix="judge" %}
-          {% include "common/_index_list.html" %}
+      {% with enter_path=enter_judge view_path_prefix="judge" %}
+        {% with add_emoji_path="pairings/add_judge_emojis" %}
+        {% include "common/_index_list.html" %}
         {% endwith %}
+      {% endwith %}
       {% endwith %}
     {% endwith %}
 
     {% with count=number_teams model_name="Teams" list_data=team_list %}
       {% with html_id="team-list" list_path=view_teams %}
-        {% with enter_path=enter_team view_path_prefix="team" %}
-          {% include "common/_index_list.html" %}
+      {% with enter_path=enter_team view_path_prefix="team" %}
+        {% with add_emoji_path="pairings/add_team_emojis" %}
+        {% include "common/_index_list.html" %}
         {% endwith %}
+      {% endwith %}
       {% endwith %}
     {% endwith %}
 
