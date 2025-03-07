@@ -17,13 +17,13 @@ class Command(BaseCommand):
             dest="tab_password",
             help="Password for the tab user",
             nargs="?",
-            default=User.objects.make_random_password(length=8))
+            default="temp")
         parser.add_argument(
             "--entry-password",
             dest="entry_password",
             help="Password for the entry user",
             nargs="?",
-            default=User.objects.make_random_password(length=8))
+            default="temp")
         parser.add_argument(
             "--first-init",
             dest="first_init",
