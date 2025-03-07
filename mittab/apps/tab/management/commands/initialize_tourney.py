@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from mittab.apps.tab.models import TabSettings
-from mittab.libs.backup import backup_round, BEFORE_NEW_TOURNAMENT
+from mittab.libs.backup import INITAL, backup_round, BEFORE_NEW_TOURNAMENT
 
 class Command(BaseCommand):
     help = "Setup a new tounament and backup the last one"
@@ -72,4 +72,4 @@ class Command(BaseCommand):
             "%s | %s" %
             ("entry".ljust(10, " "), options["entry_password"].ljust(10, " ")))
         if options["first_init"]:
-            backup_round("inital_tournament")
+            backup_round(INITAL)

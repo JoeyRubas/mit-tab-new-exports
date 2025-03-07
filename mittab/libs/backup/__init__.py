@@ -111,7 +111,6 @@ def get_metadata(filename):
         ]
 
 def list_backups():
-    print("Checking backups directory")
     keys = BACKUP_STORAGE.keys()
     metadata = []
     for key in keys:
