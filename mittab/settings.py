@@ -95,7 +95,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "assets"), )
 
 CSRF_TRUSTED_ORIGINS = [
-    f"https://*.nu-tab.com"
+    f"https://*.nu-tab.com",
+    "https://*.uva-tab.site"
 ]
 
 WEBPACK_LOADER = {
