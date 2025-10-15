@@ -163,6 +163,7 @@ def add_judges():
 
     judge_round_joins, chair_by_pairing = [], [None] * num_rounds
     assigned_judges = set()
+    assigned_pairs = set()
     for pairing_i, padded_judge_i in enumerate(judge_assignments[:num_rounds]):
         judge_i = padded_judge_i - num_rounds
 
@@ -172,7 +173,10 @@ def add_judges():
         round_obj.chair = judge
         chair_by_pairing[pairing_i] = judge_i
         assigned_judges.add(judge_i)
-        judge_round_joins.append(Round.judges.through(judge=judge, round=round_obj))
+        assigned_pairs.add((pairing_i, judge_i))
+        judge_round_joins.append(
+            Round.judges.through(judge=judge, round=round_obj)
+        )
 
     Round.objects.bulk_update(pairings, ["chair"])
     if settings.pair_wings and num_rounds and len(judges) > num_rounds:
@@ -186,11 +190,18 @@ def add_judges():
             if not available_indices:
                 break
 
+            wing_pool = list(available_indices)
+            pairing_indices = list(range(num_rounds))
+            if settings.wing_mode == WingPairingMode.RANDOM:
+                random.shuffle(wing_pool)
+                random.shuffle(pairing_indices)
+
             wing_edges = []
-            for relative_rank, judge_i in enumerate(available_indices):
+            for relative_rank, judge_i in enumerate(wing_pool):
                 judge = judges[judge_i]
                 judge_score = judge_scores[judge_i]
-                for pairing_i, pairing in enumerate(pairings):
+                for pairing_i in pairing_indices:
+                    pairing = pairings[pairing_i]
                     has_conflict = judge_conflict(
                         judge,
                         pairing.gov_team,
@@ -233,11 +244,16 @@ def add_judges():
                 judge_i = padded_judge_i - num_rounds
                 if judge_i in assigned_judges:
                     continue
-                judge_round_joins.append(Round.judges.through(
-                    judge=judges[judge_i],
-                    round=pairings[pairing_i],
-                ))
+                if (pairing_i, judge_i) in assigned_pairs:
+                    continue
+                judge_round_joins.append(
+                    Round.judges.through(
+                        judge=judges[judge_i],
+                        round=pairings[pairing_i],
+                    )
+                )
                 assigned_judges.add(judge_i)
+                assigned_pairs.add((pairing_i, judge_i))
 
     Round.judges.through.objects.bulk_create(judge_round_joins)
 
