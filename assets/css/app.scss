@@ -6,6 +6,7 @@ $font-size-base: 0.95rem !default;
 }
 
 @import "~bootstrap/scss/bootstrap";
+@import "mobile-nav";
 
 .bg-dark {
   background-color: #00438A !important;
